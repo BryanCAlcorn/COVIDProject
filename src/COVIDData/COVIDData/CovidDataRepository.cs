@@ -29,7 +29,7 @@ namespace COVIDData
             var maxValue = countyCases.Max(kvp => kvp.Value);
             var maxCases = countyCases.First(kvp => kvp.Value == maxValue);
 
-            var averageCases = countyCases.Average(kvp => kvp.Value);
+            var averageCases = Math.Round(countyCases.Average(kvp => kvp.Value), 1);
 
             return new CovidQueryResult(county, countyRow.Latitude, countyRow.Longitude,
                 averageCases, minCases.Value, minCases.Key, maxCases.Value, maxCases.Key);
