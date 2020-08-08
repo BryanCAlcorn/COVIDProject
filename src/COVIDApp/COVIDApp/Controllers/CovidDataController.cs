@@ -41,5 +41,17 @@ namespace COVIDApp.Controllers
                 return Problem();
             }
         }
+
+        [HttpGet, Route("daily")]
+        public async Task<IActionResult> DailyBreakdown(string county, string state, DateTime? startDate, DateTime? endDate)
+        {
+            return NotFound();
+        }
+
+        [HttpGet, Route("change")]
+        public async Task<IActionResult> RateOfChange(string county, string state, DateTime? startDate, DateTime? endDate)
+        {
+            return NotFound();
+        }
     }
 }
