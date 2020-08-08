@@ -10,9 +10,9 @@ namespace COVIDData
         private CovidDataSource _covidDataSource;
         private IList<CovidDataRow> _covidData;
 
-        public CovidDataRepository()
+        public CovidDataRepository(ICovidDataSource dataSource)
         {
-            _covidDataSource = new CovidDataSource();
+            _covidDataSource = dataSource;
         }
 
         public async Task<CovidQueryResult> QueryByCounty(string county, DateRange range)
