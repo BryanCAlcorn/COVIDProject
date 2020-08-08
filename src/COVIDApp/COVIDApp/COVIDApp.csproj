@@ -4,4 +4,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\COVIDData\COVIDData\COVIDData.csproj" />
+  </ItemGroup>
+
 </Project>
