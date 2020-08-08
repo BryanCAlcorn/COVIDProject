@@ -4,13 +4,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace COVIDTests
 {
     [TestClass]
-    public class DataFetcherTests
+    public class DataRepositoryTests
     {
         [TestMethod]
         public void Test_GetData_VerifyDataParsing()
         {
             //Arrange
-            var fetcher = new CovidDataFetcher();
+            var fetcher = new CovidDataRepository();
 
             //Act
             var data = fetcher.GetData().ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();

@@ -35,16 +35,16 @@ namespace COVIDData
                             Code3 = code3;
                         }
                     }
-                    else if (string.Equals(header[i], nameof(FIPS), StringComparison.OrdinalIgnoreCase))
+                    else if (string.Equals(header[i], "FIPS", StringComparison.OrdinalIgnoreCase))
                     {
                         if (double.TryParse(data[i], out var fips))
                         {
                             FIPS = fips;
                         }
                     }
-                    else if (string.Equals(header[i], nameof(Admin2), StringComparison.OrdinalIgnoreCase))
+                    else if (string.Equals(header[i], "Admin2", StringComparison.OrdinalIgnoreCase))
                     {
-                        Admin2 = data[i];
+                        County = data[i];
                     }
                     else if (string.Equals(header[i], "Province_State", StringComparison.OrdinalIgnoreCase))
                     {
@@ -90,7 +90,7 @@ namespace COVIDData
 
         public double? FIPS { get; set; }
 
-        public string Admin2 { get; set; }
+        public string County { get; set; }
 
         public string ProvinceState { get; set; }
 

@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 
 namespace COVIDData
 {
-    public class CovidDataFetcher
+    public class CovidDataRepository
     {
         private const string DataURL = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv";
 
         private readonly HttpClient _dataClient = new HttpClient();
 
-        public CovidDataFetcher()
+        public CovidDataRepository()
         {
         }
 
@@ -19,12 +19,11 @@ namespace COVIDData
         {
             var parsedRows = new List<CovidDataRow>();
 
-            var dataResponse = await _dataClient.GetAsync(DataURL);
-            var dataStream = await dataResponse.Content.ReadAsStreamAsync();
-
-            //Manually Parse the CSV...
+            using (var dataResponse = await _dataClient.GetAsync(DataURL))
+            using (var dataStream = await dataResponse.Content.ReadAsStreamAsync())
             using (var parser = new TextFieldParser(dataStream))
             {
+                //Manually Parse the CSV...
                 parser.TextFieldType = FieldType.Delimited;
                 parser.SetDelimiters(",");
 
