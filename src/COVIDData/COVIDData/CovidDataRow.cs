@@ -75,6 +75,7 @@ namespace COVIDData
                 {
                     Console.WriteLine($"Error parsing data: {header[i]} at index {i}, data: {data[i]}.");
                     Console.WriteLine($"Exception: {ex}");
+                    throw;
                 }
             }
         }
