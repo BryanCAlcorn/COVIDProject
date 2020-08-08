@@ -7,7 +7,7 @@ namespace COVIDData
 {
     public class CovidDataRepository : ICovidDataRepository
     {
-        private CovidDataSource _covidDataSource;
+        private ICovidDataSource _covidDataSource;
         private IList<CovidDataRow> _covidData;
 
         public CovidDataRepository(ICovidDataSource dataSource)
