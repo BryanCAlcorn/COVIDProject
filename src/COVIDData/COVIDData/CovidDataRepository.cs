@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -29,7 +30,7 @@ namespace COVIDData
             var maxValue = countyCases.Max(kvp => kvp.Value);
             var maxCases = countyCases.First(kvp => kvp.Value == maxValue);
 
-            var averageCases = GetAverage(minCases, maxCases);
+            var averageCases = GetAverage(minCases, maxCases, range.TotalDays);
 
             return new CovidQueryResult(county, countyRow.Latitude, countyRow.Longitude,
                 averageCases, minCases.Value, minCases.Key, maxCases.Value, maxCases.Key);
@@ -43,26 +44,50 @@ namespace COVIDData
 
             var stateCases = stateRows.SelectMany(county => county.ConfirmedCases.Where(kvp => range.Contains(kvp.Key)));
 
-            var minValue = stateCases.Min(kvp => kvp.Value);
-            var minCases = stateCases.First(kvp => kvp.Value == minValue);
+            var stateTotals = stateRows.Aggregate(new Dictionary<DateTime, int>(), (dict, county) =>
+            {
+                var countyCases = county.ConfirmedCases.Where(kvp => range.Contains(kvp.Key));
 
-            var maxValue = stateCases.Max(kvp => kvp.Value);
-            var maxCases = stateCases.First(kvp => kvp.Value == maxValue);
+                foreach(var cases in countyCases)
+                {
+                    if (dict.ContainsKey(cases.Key))
+                    {
+                        dict[cases.Key] += cases.Value;
+                    }
+                    else
+                    {
+                        dict[cases.Key] = cases.Value;
+                    }
+                }
 
-            var averageCases = GetAverage(minCases, maxCases);
+                return dict;
+            });
+
+            var minValue = stateTotals.Min(kvp => kvp.Value);
+            var minCases = stateTotals.First(kvp => kvp.Value == minValue);
+
+            var maxValue = stateTotals.Max(kvp => kvp.Value);
+            var maxCases = stateTotals.First(kvp => kvp.Value == maxValue);
+
+            var averageCases = GetAverage(minCases, maxCases, range.TotalDays);
 
             return new CovidQueryResult(state, string.Empty, string.Empty,
                 averageCases, minCases.Value, minCases.Key, maxCases.Value, maxCases.Key);
         }
 
-        private double GetAverage(KeyValuePair<DateTime, int> minCases, KeyValuePair<DateTime, int> maxCases)
+        private double GetAverage(KeyValuePair<DateTime, int> minCases, KeyValuePair<DateTime, int> maxCases, double days)
         {
-            var numDays = (maxCases.Key - minCases.Key).TotalDays;
-
-            //Average Case Change over time
-            var average = (maxCases.Value - minCases.Value) / numDays;
-
-            return Math.Round(average);
+            if (days > 0)
+            {
+                //Average Case Change over time
+                var average = (maxCases.Value - minCases.Value) / days;
+                //Rounded to the nearest tenth
+                return Math.Round(average, 1);
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         private async Task<IList<CovidDataRow>> CovidData()
