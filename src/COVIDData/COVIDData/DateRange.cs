@@ -6,20 +6,22 @@ namespace COVIDData
 {
     public class DateRange
     {
-        private readonly DateTime _startDate;
-        private readonly DateTime _endDate;
-
+        
         public DateRange(DateTime? startDate, DateTime? endDate)
         {
-            _startDate = (startDate ?? DateTime.MinValue).Date;
-            _endDate = (endDate ?? DateTime.MaxValue).Date;
+            StartDate = (startDate ?? DateTime.MinValue).Date;
+            EndDate = (endDate ?? DateTime.MaxValue).Date;
         }
+
+        public DateTime StartDate { get; }
+
+        public DateTime EndDate { get; }
 
         public double TotalDays
         {
             get
             {
-                return (_endDate - _startDate).TotalDays;
+                return (EndDate - StartDate).TotalDays;
             }
         }
 
@@ -30,7 +32,7 @@ namespace COVIDData
         /// <returns></returns>
         public bool Contains(DateTime dateToCheck)
         {
-            return dateToCheck.Date >= _startDate && dateToCheck.Date <= _endDate;
+            return dateToCheck.Date >= StartDate && dateToCheck.Date <= EndDate;
         }
 
     }
