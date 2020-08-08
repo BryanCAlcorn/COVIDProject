@@ -4,16 +4,16 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace COVIDTests
 {
     [TestClass]
-    public class DataRepositoryTests
+    public class CovidDataSourceTests
     {
         [TestMethod]
         public void Test_GetData_VerifyDataParsing()
         {
             //Arrange
-            var fetcher = new CovidDataRepository();
+            var source = new CovidDataSource();
 
             //Act
-            var data = fetcher.GetData().ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
+            var data = source.GetData().ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
 
             //Assert
             Assert.IsNotNull(data, nameof(data));

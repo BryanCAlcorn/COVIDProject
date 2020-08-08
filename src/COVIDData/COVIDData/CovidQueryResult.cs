@@ -4,9 +4,20 @@ namespace COVIDData
 {
     public class CovidQueryResult
     {
-        public string County { get; }
+        public CovidQueryResult(string location, string latitute, string longitude,
+            double avgDailyCases, int minCaseCount, DateTime minCaseDate, int maxCaseCount, DateTime maxCaseDate)
+        {
+            Location = location;
+            Latitude = latitute;
+            Longitude = longitude;
+            AverageDailyCases = avgDailyCases;
+            MinimumCaseCount = minCaseCount;
+            MinimumCaseDate = minCaseDate;
+            MaximumCaseCount = maxCaseCount;
+            MaximumCaseDate = maxCaseDate;
+        }
 
-        public string State { get; }
+        public string Location { get; }
 
         public string Latitude { get; }
 
