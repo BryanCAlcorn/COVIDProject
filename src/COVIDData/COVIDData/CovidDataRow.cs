@@ -83,6 +83,14 @@ namespace COVIDData
             ConfirmedCases = caseTotals;
         }
 
+        public CovidDataRow(string county, string provinceState, Dictionary<DateTime, int> cases)
+        {
+            County = county;
+            ProvinceState = provinceState;
+            ConfirmedCases = cases;
+            //TODO: Should fill rest of values...
+        }
+
         public long UID { get; }
 
         public string ISO2 { get; }
