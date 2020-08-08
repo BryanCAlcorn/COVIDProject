@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "COVIDApp", "COVIDApp\COVIDA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "COVIDData", "..\COVIDData\COVIDData\COVIDData.csproj", "{5825F8BB-6959-4F8E-BD6B-F7DFACD14D59}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "COVIDTests", "COVIDTests\COVIDTests.csproj", "{C58232AC-6330-4447-BD24-CA9A1E3FC7DF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{5825F8BB-6959-4F8E-BD6B-F7DFACD14D59}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5825F8BB-6959-4F8E-BD6B-F7DFACD14D59}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5825F8BB-6959-4F8E-BD6B-F7DFACD14D59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C58232AC-6330-4447-BD24-CA9A1E3FC7DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C58232AC-6330-4447-BD24-CA9A1E3FC7DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C58232AC-6330-4447-BD24-CA9A1E3FC7DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C58232AC-6330-4447-BD24-CA9A1E3FC7DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
