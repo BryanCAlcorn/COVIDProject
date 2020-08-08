@@ -10,7 +10,7 @@ namespace COVIDData
         {
             if (header.Length != data.Length) throw new ArgumentException("Header and data not same length");
 
-            ConfirmedCases = new SortedDictionary<DateTime, int>();
+            var caseTotals = new Dictionary<DateTime, int>();
 
             for (int i = 0; i < header.Length; i++)
             {
@@ -70,7 +70,7 @@ namespace COVIDData
                     }
                     else if (DateTime.TryParse(header[i], out var dt))
                     {
-                        ConfirmedCases[dt] = Convert.ToInt32(data[i]);
+                        caseTotals[dt] = Convert.ToInt32(data[i]);
                     }
                 }
                 catch(Exception ex)
@@ -80,6 +80,8 @@ namespace COVIDData
                     throw;
                 }
             }
+
+            ConfirmedCases = caseTotals;
         }
 
         public long UID { get; }
