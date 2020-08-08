@@ -17,11 +17,14 @@ namespace COVIDApp.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> QueryBy(string county, string state, DateTime? startDate, DateTime? endDate)
+        public async Task<IActionResult> QueryBy(string county, string state, string startDate, string endDate)
         {
             try
             {
-                var dateRange = new DateRange(startDate, endDate);
+                var startDt = ParseDateString(startDate);
+                var endDt = ParseDateString(endDate);
+
+                var dateRange = new DateRange(startDt, endDt);
                 if (!string.IsNullOrEmpty(county))
                 {
                     return Ok(await _dataRepository.QueryByCounty(county, dateRange));
@@ -40,6 +43,13 @@ namespace COVIDApp.Controllers
                 Console.WriteLine(ex);
                 return Problem();
             }
+        }
+
+        private DateTime? ParseDateString(string dateString)
+        {
+            if (string.IsNullOrEmpty(dateString)) return null;
+
+            return DateTime.Parse(dateString);
         }
     }
 }
