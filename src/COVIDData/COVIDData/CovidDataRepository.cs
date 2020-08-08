@@ -29,7 +29,7 @@ namespace COVIDData
             var maxValue = countyCases.Max(kvp => kvp.Value);
             var maxCases = countyCases.First(kvp => kvp.Value == maxValue);
 
-            var averageCases = Math.Round(countyCases.Average(kvp => kvp.Value), 1);
+            var averageCases = GetAverage(minCases, maxCases);
 
             return new CovidQueryResult(county, countyRow.Latitude, countyRow.Longitude,
                 averageCases, minCases.Value, minCases.Key, maxCases.Value, maxCases.Key);
@@ -49,10 +49,20 @@ namespace COVIDData
             var maxValue = stateCases.Max(kvp => kvp.Value);
             var maxCases = stateCases.First(kvp => kvp.Value == maxValue);
 
-            var averageCases = stateCases.Average(kvp => kvp.Value);
+            var averageCases = GetAverage(minCases, maxCases);
 
             return new CovidQueryResult(state, string.Empty, string.Empty,
                 averageCases, minCases.Value, minCases.Key, maxCases.Value, maxCases.Key);
+        }
+
+        private double GetAverage(KeyValuePair<DateTime, int> minCases, KeyValuePair<DateTime, int> maxCases)
+        {
+            var numDays = (maxCases.Key - minCases.Key).TotalDays;
+
+            //Average Case Change over time
+            var average = (maxCases.Value - minCases.Value) / numDays;
+
+            return Math.Round(average);
         }
 
         private async Task<IList<CovidDataRow>> CovidData()
