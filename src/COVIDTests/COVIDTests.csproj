@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\COVIDData\COVIDData\COVIDData.csproj" />
+    <ProjectReference Include="..\COVIDData\COVIDData\COVIDData.csproj" />
   </ItemGroup>
 
 </Project>
