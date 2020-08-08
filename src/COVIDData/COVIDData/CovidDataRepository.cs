@@ -1,5 +1,7 @@
 ﻿using Microsoft.VisualBasic.FileIO;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -11,11 +13,32 @@ namespace COVIDData
 
         private readonly HttpClient _dataClient = new HttpClient();
 
+        private IList<CovidDataRow> _covidData;
+
         public CovidDataRepository()
         {
         }
 
-        public async Task<IList<CovidDataRow>> GetData()
+        public async Task<IList<CovidDataRow>> QueryByCounty(string county, DateRange range)
+        {
+            var data = await CovidData();
+            var filtered = data.Where(d => string.Equals(d.County, county, StringComparison.OrdinalIgnoreCase));
+
+            var countyCases = filtered.SelectMany(d => d.ConfirmedCases.Where(kvp => range.Contains(kvp.Key)));
+
+
+        }
+
+        private async Task<IList<CovidDataRow>> CovidData()
+        {
+            if (_covidData == null)
+            {
+                _covidData = await GetData();
+            }
+            return _covidData;
+        }
+
+        private async Task<IList<CovidDataRow>> GetData()
         {
             var parsedRows = new List<CovidDataRow>();
 
