@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace COVIDData
 {
-    public class CovidDataRepository
+    public class CovidDataRepository : ICovidDataRepository
     {
         private CovidDataSource _covidDataSource;
         private IList<CovidDataRow> _covidData;
