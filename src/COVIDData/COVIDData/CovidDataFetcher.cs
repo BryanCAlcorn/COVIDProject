@@ -1,12 +1,5 @@
-﻿using CsvHelper;
-using CsvHelper.Configuration;
-using Microsoft.VisualBasic.FileIO;
-using System;
-using System.Collections;
+﻿using Microsoft.VisualBasic.FileIO;
 using System.Collections.Generic;
-using System.Data.Common;
-using System.Globalization;
-using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -22,8 +15,6 @@ namespace COVIDData
         {
         }
 
-        
-
         public async Task<IList<CovidDataRow>> GetData()
         {
             var parsedRows = new List<CovidDataRow>();
@@ -31,7 +22,7 @@ namespace COVIDData
             var dataResponse = await _dataClient.GetAsync(DataURL);
             var dataStream = await dataResponse.Content.ReadAsStreamAsync();
 
-            //Manually Parsing the CSV...
+            //Manually Parse the CSV...
             using (var parser = new TextFieldParser(dataStream))
             {
                 parser.TextFieldType = FieldType.Delimited;
