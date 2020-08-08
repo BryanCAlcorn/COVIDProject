@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace COVIDData
 {
@@ -9,7 +10,8 @@ namespace COVIDData
         {
             if (header.Length != data.Length) throw new ArgumentException("Header and data not same length");
 
-            ConfirmedCases = new Dictionary<DateTime, int>();
+            ConfirmedCases = new SortedDictionary<DateTime, int>();
+
             for (int i = 0; i < header.Length; i++)
             {
                 try
@@ -80,28 +82,28 @@ namespace COVIDData
             }
         }
 
-        public long UID { get; set; }
+        public long UID { get; }
 
-        public string ISO2 { get; set; }
+        public string ISO2 { get; }
 
-        public string ISO3 { get; set; }
+        public string ISO3 { get; }
 
-        public int? Code3 { get; set; }
+        public int? Code3 { get; }
 
-        public double? FIPS { get; set; }
+        public double? FIPS { get; }
 
-        public string County { get; set; }
+        public string County { get; }
 
-        public string ProvinceState { get; set; }
+        public string ProvinceState { get; }
 
-        public string CountryRegion { get; set; }
+        public string CountryRegion { get; }
 
-        public string Latitude { get; set; }
+        public string Latitude { get; }
 
-        public string Longitude { get; set; }
+        public string Longitude { get; }
 
-        public string CombinedKey { get; set; }
+        public string CombinedKey { get; }
 
-        public IDictionary<DateTime, int> ConfirmedCases { get; set; }
+        public IReadOnlyDictionary<DateTime, int> ConfirmedCases { get; }
     }
 }
