@@ -26,20 +26,9 @@ namespace COVIDData
             var countyRow = data.FirstOrDefault(d => string.Equals(d.County, county, StringComparison.OrdinalIgnoreCase));
             if (countyRow == null) throw new DataNotFoundException($"County {county} not available in data set.", nameof(county));
 
-            var minDate = range.StartDate;
-            if(!countyRow.ConfirmedCases.TryGetValue(minDate, out var minCases))
-            {
-                minDate = countyRow.ConfirmedCases.Keys.Min();
-                minCases = countyRow.ConfirmedCases[minDate];
-            }
-
-            var maxDate = range.EndDate;
-            if(!countyRow.ConfirmedCases.TryGetValue(maxDate, out var maxCases))
-            {
-                maxDate = countyRow.ConfirmedCases.Keys.Max();
-                maxCases = countyRow.ConfirmedCases[maxDate];
-            }
-
+            var minCases = countyRow.ConfirmedCases.GetValueOrMin(range.StartDate, out var minDate);
+            var maxCases = countyRow.ConfirmedCases.GetValueOrMax(range.EndDate, out var maxDate);
+            
             var totalDays = (maxDate - minDate).TotalDays;
             var averageCases = GetAverage(minCases, maxCases, totalDays);
 
@@ -56,20 +45,8 @@ namespace COVIDData
 
             var stateTotals = stateRows.Aggregate(new Dictionary<DateTime, int>(), (dict, countyRow) =>
             {
-                //TODO: Factor this into a separate method.
-                var minDate = range.StartDate;
-                if (!countyRow.ConfirmedCases.TryGetValue(minDate, out var minCases))
-                {
-                    minDate = countyRow.ConfirmedCases.Keys.Min();
-                    minCases = countyRow.ConfirmedCases[minDate];
-                }
-
-                var maxDate = range.EndDate;
-                if (!countyRow.ConfirmedCases.TryGetValue(maxDate, out var maxCases))
-                {
-                    maxDate = countyRow.ConfirmedCases.Keys.Max();
-                    maxCases = countyRow.ConfirmedCases[maxDate];
-                }
+                var minCases = countyRow.ConfirmedCases.GetValueOrMin(range.StartDate, out var minDate);
+                var maxCases = countyRow.ConfirmedCases.GetValueOrMax(range.EndDate, out var maxDate);
 
                 dict.AddOrUpdateValue(minDate, minCases);
                 dict.AddOrUpdateValue(maxDate, maxCases);
@@ -82,7 +59,6 @@ namespace COVIDData
             var minCases = stateTotals[minDate];
             var maxCases = stateTotals[maxDate];
             var totalDays = (maxDate - minDate).TotalDays;
-
             var averageCases = GetAverage(minCases, maxCases, totalDays);
 
             return new CovidQueryResult(state, string.Empty, string.Empty,
