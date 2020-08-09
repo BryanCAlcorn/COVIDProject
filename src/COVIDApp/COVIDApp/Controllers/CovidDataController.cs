@@ -23,7 +23,7 @@ namespace COVIDApp.Controllers
             {
                 var dateRange = new DateRange(startDate, endDate);
 
-                if (!string.IsNullOrEmpty(county))
+                if (!string.IsNullOrEmpty(county) && string.IsNullOrEmpty(state))
                 {
                     return Ok(await _dataRepository.QueryByCounty(county, dateRange));
                 }
@@ -33,7 +33,7 @@ namespace COVIDApp.Controllers
                 }
                 else
                 {
-                    return NotFound();
+                    return BadRequest($"Must use either {nameof(county)} or {nameof(state)}");
                 }
             }
             catch (DatesOutOfRangeException)
@@ -59,7 +59,7 @@ namespace COVIDApp.Controllers
             {
                 var dateRange = new DateRange(startDate, endDate);
 
-                if (!string.IsNullOrEmpty(county))
+                if (!string.IsNullOrEmpty(county) && string.IsNullOrEmpty(state))
                 {
                     return Ok(await _dataRepository.GetDailyBreakdownByCounty(county, dateRange));
                 }
@@ -69,7 +69,7 @@ namespace COVIDApp.Controllers
                 }
                 else
                 {
-                    return NotFound();
+                    return BadRequest($"Must use either {nameof(county)} or {nameof(state)}");
                 }
             }
             catch (DatesOutOfRangeException)
@@ -95,7 +95,7 @@ namespace COVIDApp.Controllers
             {
                 var dateRange = new DateRange(startDate, endDate);
 
-                if (!string.IsNullOrEmpty(county))
+                if (!string.IsNullOrEmpty(county) && string.IsNullOrEmpty(state))
                 {
                     return Ok(await _dataRepository.GetRateOfChangeByCounty(county, dateRange));
                 }
@@ -105,7 +105,7 @@ namespace COVIDApp.Controllers
                 }
                 else
                 {
-                    return NotFound();
+                    return BadRequest($"Must use either {nameof(county)} or {nameof(state)}");
                 }
             }
             catch (DatesOutOfRangeException)
