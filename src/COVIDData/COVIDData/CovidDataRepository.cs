@@ -107,7 +107,7 @@ namespace COVIDData
             var countyRow = data.FirstOrDefault(d => string.Equals(d.County, county, StringComparison.OrdinalIgnoreCase));
             if (countyRow == null) throw new DataNotFoundException($"County {county} not available in data set.", nameof(county));
 
-            var orderedCasesInRange = countyRow.ConfirmedCases.Where(kvp => range.Contains(kvp.Key)).OrderByDescending(kvp => kvp.Key);
+            var orderedCasesInRange = countyRow.ConfirmedCases.Where(kvp => range.Contains(kvp.Key)).OrderBy(kvp => kvp.Key);
 
             var dailyChanges = new List<DailyChange>();
 
@@ -161,6 +161,83 @@ namespace COVIDData
             }
 
             return new DailyBreakdownResult(state, string.Empty, string.Empty, dailyChanges);
+        }
+
+        public async Task<RateOfChangeResult> GetRateOfChangeByCounty(string county, DateRange range)
+        {
+            var data = await CovidData();
+
+            var countyRow = data.FirstOrDefault(d => string.Equals(d.County, county, StringComparison.OrdinalIgnoreCase));
+            if (countyRow == null) throw new DataNotFoundException($"County {county} not available in data set.", nameof(county));
+
+            var orderedCasesInRange = countyRow.ConfirmedCases.Where(kvp => range.Contains(kvp.Key)).OrderBy(kvp => kvp.Key);
+
+            var dailyRateOfChange = new List<DailyRateOfChange>();
+
+            //TODO: Requirement is unclear on what the percentage should be against:
+            //e.g. Could be percentage of total population in the region, etc.
+            //Using the data we have, going for rate of change against the highest number of cases in the range.
+            var maxCasesInRange = orderedCasesInRange.Max(kvp => kvp.Value);
+            var normalizationFactor = 100.0 / maxCasesInRange;
+
+            var prevCases = 0;
+            foreach (var dailyCases in orderedCasesInRange)
+            {
+                var totalChange = dailyCases.Value - prevCases;
+                var change = new DailyRateOfChange(dailyCases.Key, totalChange, totalChange * normalizationFactor);
+                prevCases = dailyCases.Value;
+                dailyRateOfChange.Add(change);
+            }
+
+            return new RateOfChangeResult(county, countyRow.Latitude, countyRow.Longitude, dailyRateOfChange);
+        }
+
+        public async Task<RateOfChangeResult> GetRateOfChangeByState(string state, DateRange range)
+        {
+            var data = await CovidData();
+
+            var stateRows = data.Where(d => string.Equals(d.ProvinceState, state, StringComparison.OrdinalIgnoreCase));
+            if (!stateRows.Any()) throw new DataNotFoundException($"State {state} not available in data set", nameof(state));
+
+            var stateTotalsInRange = stateRows.Aggregate(new Dictionary<DateTime, int>(), (dict, countyRow) =>
+            {
+                var casesInRange = countyRow.ConfirmedCases.Where(kvp => range.Contains(kvp.Key));
+
+                foreach (var cases in casesInRange)
+                {
+                    if (dict.ContainsKey(cases.Key))
+                    {
+                        dict[cases.Key] += cases.Value;
+                    }
+                    else
+                    {
+                        dict[cases.Key] = cases.Value;
+                    }
+                }
+
+                return dict;
+            });
+
+            var orderedCasesInRange = stateTotalsInRange.OrderBy(kvp => kvp.Key);
+
+            var dailyRateOfChange = new List<DailyRateOfChange>();
+
+            //TODO: Requirement is unclear on what the percentage should be against:
+            //e.g. Could be percentage of total population in the region, etc.
+            //Using the data we have, going for rate of change against the highest number of cases in the range.
+            var maxCasesInRange = orderedCasesInRange.Max(kvp => kvp.Value);
+            var normalizationFactor = 100.0 / maxCasesInRange;
+
+            var prevCases = 0;
+            foreach (var dailyCases in orderedCasesInRange)
+            {
+                var totalChange = dailyCases.Value - prevCases;
+                var change = new DailyRateOfChange(dailyCases.Key, totalChange, totalChange * normalizationFactor);
+                prevCases = dailyCases.Value;
+                dailyRateOfChange.Add(change);
+            }
+
+            return new RateOfChangeResult(state, string.Empty, string.Empty, dailyRateOfChange);
         }
 
         private double GetAverage(int minCases, int maxCases, double days)
