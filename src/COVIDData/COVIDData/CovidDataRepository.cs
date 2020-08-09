@@ -22,18 +22,13 @@ namespace COVIDData
 
             var countyRow = data.First(d => string.Equals(d.County, county, StringComparison.OrdinalIgnoreCase));
 
-            var countyCases = countyRow.ConfirmedCases.Where(kvp => range.Contains(kvp.Key));
-
-            var minValue = countyCases.Min(kvp => kvp.Value);
-            var minCases = countyCases.First(kvp => kvp.Value == minValue);
-
-            var maxValue = countyCases.Max(kvp => kvp.Value);
-            var maxCases = countyCases.First(kvp => kvp.Value == maxValue);
-
+            var minCases = countyRow.ConfirmedCases[range.StartDate];
+            var maxCases = countyRow.ConfirmedCases[range.EndDate];
+            
             var averageCases = GetAverage(minCases, maxCases, range.TotalDays);
 
             return new CovidQueryResult(county, countyRow.Latitude, countyRow.Longitude,
-                averageCases, minCases.Value, minCases.Key, maxCases.Value, maxCases.Key);
+                averageCases, minCases, range.StartDate, maxCases, range.EndDate);
         }
 
         public async Task<CovidQueryResult> QueryByState(string state, DateRange range)
@@ -42,45 +37,47 @@ namespace COVIDData
 
             var stateRows = data.Where(d => string.Equals(d.ProvinceState, state, StringComparison.OrdinalIgnoreCase));
 
-            var stateCases = stateRows.SelectMany(county => county.ConfirmedCases.Where(kvp => range.Contains(kvp.Key)));
-
             var stateTotals = stateRows.Aggregate(new Dictionary<DateTime, int>(), (dict, county) =>
             {
-                var countyCases = county.ConfirmedCases.Where(kvp => range.Contains(kvp.Key));
-
-                foreach(var cases in countyCases)
+                var countyStartCases = county.ConfirmedCases[range.StartDate];
+                var countyEndCases = county.ConfirmedCases[range.EndDate];
+                
+                if (dict.ContainsKey(range.StartDate))
                 {
-                    if (dict.ContainsKey(cases.Key))
-                    {
-                        dict[cases.Key] += cases.Value;
-                    }
-                    else
-                    {
-                        dict[cases.Key] = cases.Value;
-                    }
+                    dict[range.StartDate] += countyStartCases;
+                }
+                else
+                {
+                    dict[range.StartDate] = countyStartCases;
+                }
+
+                if (dict.ContainsKey(range.EndDate))
+                {
+                    dict[range.EndDate] += countyEndCases;
+                }
+                else
+                {
+                    dict[range.EndDate] = countyEndCases;
                 }
 
                 return dict;
             });
 
-            var minValue = stateTotals.Min(kvp => kvp.Value);
-            var minCases = stateTotals.First(kvp => kvp.Value == minValue);
-
-            var maxValue = stateTotals.Max(kvp => kvp.Value);
-            var maxCases = stateTotals.First(kvp => kvp.Value == maxValue);
+            var minCases = stateTotals[range.StartDate];
+            var maxCases = stateTotals[range.EndDate];
 
             var averageCases = GetAverage(minCases, maxCases, range.TotalDays);
 
             return new CovidQueryResult(state, string.Empty, string.Empty,
-                averageCases, minCases.Value, minCases.Key, maxCases.Value, maxCases.Key);
+                averageCases, minCases, range.StartDate, maxCases, range.EndDate);
         }
 
-        private double GetAverage(KeyValuePair<DateTime, int> minCases, KeyValuePair<DateTime, int> maxCases, double days)
+        private double GetAverage(int minCases, int maxCases, double days)
         {
             if (days > 0)
             {
                 //Average Case Change over time
-                var average = (maxCases.Value - minCases.Value) / days;
+                var average = (maxCases - minCases) / days;
                 //Rounded to the nearest tenth
                 return Math.Round(average, 1);
             }
