@@ -6,3 +6,4 @@
 *bin/
 *obj/
 /src/COVIDApp/COVIDApp/COVIDApp.csproj.user
+/src/COVIDApp/COVIDApp/COVIDApp.xml
