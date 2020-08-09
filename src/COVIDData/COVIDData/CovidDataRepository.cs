@@ -184,7 +184,8 @@ namespace COVIDData
             foreach (var dailyCases in orderedCasesInRange)
             {
                 var totalChange = dailyCases.Value - prevCases;
-                var change = new DailyRateOfChange(dailyCases.Key, totalChange, totalChange * normalizationFactor);
+                var percentChange = Math.Round(totalChange * normalizationFactor, 1);
+                var change = new DailyRateOfChange(dailyCases.Key, totalChange, percentChange);
                 prevCases = dailyCases.Value;
                 dailyRateOfChange.Add(change);
             }
@@ -232,7 +233,8 @@ namespace COVIDData
             foreach (var dailyCases in orderedCasesInRange)
             {
                 var totalChange = dailyCases.Value - prevCases;
-                var change = new DailyRateOfChange(dailyCases.Key, totalChange, totalChange * normalizationFactor);
+                var percentChange = Math.Round(totalChange * normalizationFactor, 1);
+                var change = new DailyRateOfChange(dailyCases.Key, totalChange, percentChange);
                 prevCases = dailyCases.Value;
                 dailyRateOfChange.Add(change);
             }

@@ -21,6 +21,6 @@ namespace COVIDData
 
         public string Longitude { get; }
 
-        IReadOnlyList<DailyRateOfChange> DailyRateOfChange { get; }
+        public IReadOnlyList<DailyRateOfChange> DailyRateOfChange { get; }
     }
 }

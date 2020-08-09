@@ -1,16 +1,44 @@
 ﻿using COVIDData;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace COVIDTests
 {
     [TestClass]
     public class DateRangeTests
     {
+        [TestMethod, ExpectedException(typeof(DatesOutOfRangeException))]
+        public void Test_Constructor_StartDateHigherThanEndDate_ExpectException()
+        {
+            //Arrange
+            var startDt = DateTime.Now.AddDays(5);
+            var endDt = DateTime.Now.AddDays(-5);
+
+            //Act
+            new DateRange(startDt, endDt);
+
+            //Assert
+            //Expected Exception
+        }
+
         [TestMethod]
-        public void Test_DateInRange()
+        public void Test_TotalDays()
+        {
+            //Arrange
+            var startDt = DateTime.Now.AddDays(-5);
+            var endDt = DateTime.Now.AddDays(5);
+
+            var range = new DateRange(startDt, endDt);
+
+            //Act
+            var totalDays = range.TotalDays;
+
+            //Assert
+            Assert.AreEqual(10, totalDays);
+        }
+
+        [TestMethod]
+        public void Test_Contains_DateInRange()
         {
             //Arrange
             var startDt = DateTime.Now.AddDays(-5);
@@ -27,7 +55,7 @@ namespace COVIDTests
         }
 
         [TestMethod]
-        public void Test_DateInRange_MinValue()
+        public void Test_Contains_DateInRange_MinValue()
         {
             //Arrange
             var startDt = DateTime.Now.AddDays(-5);
@@ -43,7 +71,7 @@ namespace COVIDTests
         }
 
         [TestMethod]
-        public void Test_DateInRange_MaxValue()
+        public void Test_Contains_DateInRange_MaxValue()
         {
             //Arrange
             var startDt = DateTime.Now.AddDays(-5);
@@ -59,7 +87,7 @@ namespace COVIDTests
         }
 
         [TestMethod]
-        public void Test_DateOutOfRange_MaxValue()
+        public void Test_Contains_DateOutOfRange_MaxValue()
         {
             //Arrange
             var startDt = DateTime.Now.AddDays(-5);
@@ -75,7 +103,7 @@ namespace COVIDTests
         }
 
         [TestMethod]
-        public void Test_DateOutOfRange_MinValue()
+        public void Test_Contains_DateOutOfRange_MinValue()
         {
             //Arrange
             var startDt = DateTime.Now.AddDays(-5);

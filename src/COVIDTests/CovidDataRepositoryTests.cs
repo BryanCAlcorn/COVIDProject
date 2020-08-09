@@ -520,6 +520,314 @@ namespace COVIDTests
             Assert.AreEqual(3, dailyChange4.NewCases, $"{nameof(dailyChange4)}.{nameof(dailyChange4.NewCases)}");
         }
 
+        [TestMethod]
+        public void Test_Repository_RateOfChangeByCounty_InRange()
+        {
+            //Arrange
+            var mockSource = new Mock<ICovidDataSource>();
+
+            mockSource.Setup(s => s.GetData()).Returns(() => Task.FromResult(GenerateData()));
+
+            var repository = new CovidDataRepository(mockSource.Object);
+
+            var range = new DateRange(DateTime.Now.AddDays(-1), DateTime.Now.AddDays(1));
+
+            //Act
+            var result = repository.GetRateOfChangeByCounty("Alameda", range)
+                .ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
+
+            //Assert
+            Assert.AreEqual("Alameda", result.Location, nameof(result.Location));
+            Assert.AreEqual("1.234", result.Latitude, nameof(result.Latitude));
+            Assert.AreEqual("5.678", result.Longitude, nameof(result.Longitude));
+            Assert.AreEqual(3, result.DailyRateOfChange.Count, $"{nameof(result.DailyRateOfChange)}.Count");
+
+            var dailyChange0 = result.DailyRateOfChange[0];
+            Assert.AreEqual(DateTime.Now.AddDays(-1).Date, dailyChange0.Date, $"{nameof(dailyChange0)}.{nameof(dailyChange0.Date)}");
+            Assert.AreEqual(33.3, dailyChange0.PercentChange, $"{nameof(dailyChange0)}.{nameof(dailyChange0.PercentChange)}");
+            Assert.AreEqual(1, dailyChange0.NewCases, $"{nameof(dailyChange0)}.{nameof(dailyChange0.NewCases)}");
+
+            var dailyChange1 = result.DailyRateOfChange[1];
+            Assert.AreEqual(DateTime.Now.Date, dailyChange1.Date, $"{nameof(dailyChange1)}.{nameof(dailyChange1.Date)}");
+            Assert.AreEqual(33.3, dailyChange1.PercentChange, $"{nameof(dailyChange1)}.{nameof(dailyChange1.PercentChange)}");
+            Assert.AreEqual(1, dailyChange1.NewCases, $"{nameof(dailyChange1)}.{nameof(dailyChange1.NewCases)}");
+
+            var dailyChange2 = result.DailyRateOfChange[2];
+            Assert.AreEqual(DateTime.Now.AddDays(1).Date, dailyChange2.Date, $"{nameof(dailyChange2)}.{nameof(dailyChange2.Date)}");
+            Assert.AreEqual(33,3, dailyChange2.PercentChange, $"{nameof(dailyChange2)}.{nameof(dailyChange2.PercentChange)}");
+            Assert.AreEqual(1, dailyChange2.NewCases, $"{nameof(dailyChange2)}.{nameof(dailyChange2.NewCases)}");
+        }
+
+        [TestMethod, ExpectedException(typeof(DataNotFoundException))]
+        public void Test_Repository_RateOfChangeByCounty_CountyDoesntExist()
+        {
+            //Arrange
+            var mockSource = new Mock<ICovidDataSource>();
+
+            mockSource.Setup(s => s.GetData()).Returns(() => Task.FromResult(GenerateData()));
+
+            var repository = new CovidDataRepository(mockSource.Object);
+
+            var range = new DateRange(DateTime.Now.AddDays(-1), DateTime.Now.AddDays(1));
+
+            //Act
+            var result = repository.GetRateOfChangeByCounty("Not A County", range)
+                .ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
+
+            //Assert
+            //Expect Exception
+        }
+
+        [TestMethod]
+        public void Test_Repository_RateOfChangeByCounty_OutOfRange()
+        {
+            //Arrange
+            var mockSource = new Mock<ICovidDataSource>();
+
+            mockSource.Setup(s => s.GetData()).Returns(() => Task.FromResult(GenerateData()));
+
+            var repository = new CovidDataRepository(mockSource.Object);
+
+            var range = new DateRange(DateTime.Now.AddDays(-3), DateTime.Now.AddDays(3));
+
+            //Act
+            var result = repository.GetRateOfChangeByCounty("Alameda", range)
+                .ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
+
+            //Assert
+            Assert.AreEqual("Alameda", result.Location, nameof(result.Location));
+            Assert.AreEqual("1.234", result.Latitude, nameof(result.Latitude));
+            Assert.AreEqual("5.678", result.Longitude, nameof(result.Longitude));
+            Assert.AreEqual(5, result.DailyRateOfChange.Count, $"{nameof(result.DailyRateOfChange)}.Count");
+
+            var dailyChange0 = result.DailyRateOfChange[0];
+            Assert.AreEqual(DateTime.Now.AddDays(-2).Date, dailyChange0.Date, $"{nameof(dailyChange0)}.{nameof(dailyChange0.Date)}");
+            Assert.AreEqual(0.0, dailyChange0.PercentChange, $"{nameof(dailyChange0)}.{nameof(dailyChange0.PercentChange)}");
+            Assert.AreEqual(0, dailyChange0.NewCases, $"{nameof(dailyChange0)}.{nameof(dailyChange0.NewCases)}");
+
+            var dailyChange1 = result.DailyRateOfChange[1];
+            Assert.AreEqual(DateTime.Now.Date.AddDays(-1).Date, dailyChange1.Date, $"{nameof(dailyChange1)}.{nameof(dailyChange1.Date)}");
+            Assert.AreEqual(25.0, dailyChange1.PercentChange, $"{nameof(dailyChange1)}.{nameof(dailyChange1.PercentChange)}");
+            Assert.AreEqual(1, dailyChange1.NewCases, $"{nameof(dailyChange1)}.{nameof(dailyChange1.NewCases)}");
+
+            var dailyChange2 = result.DailyRateOfChange[2];
+            Assert.AreEqual(DateTime.Now.AddDays(0).Date, dailyChange2.Date, $"{nameof(dailyChange2)}.{nameof(dailyChange2.Date)}");
+            Assert.AreEqual(25.0, dailyChange2.PercentChange, $"{nameof(dailyChange2)}.{nameof(dailyChange2.PercentChange)}");
+            Assert.AreEqual(1, dailyChange2.NewCases, $"{nameof(dailyChange2)}.{nameof(dailyChange2.NewCases)}");
+
+            var dailyChange3 = result.DailyRateOfChange[3];
+            Assert.AreEqual(DateTime.Now.Date.AddDays(1).Date, dailyChange3.Date, $"{nameof(dailyChange3)}.{nameof(dailyChange3.Date)}");
+            Assert.AreEqual(25.0, dailyChange3.PercentChange, $"{nameof(dailyChange3)}.{nameof(dailyChange3.PercentChange)}");
+            Assert.AreEqual(1, dailyChange3.NewCases, $"{nameof(dailyChange3)}.{nameof(dailyChange3.NewCases)}");
+
+            var dailyChange4 = result.DailyRateOfChange[4];
+            Assert.AreEqual(DateTime.Now.AddDays(2).Date, dailyChange4.Date, $"{nameof(dailyChange4)}.{nameof(dailyChange4.Date)}");
+            Assert.AreEqual(25.0, dailyChange4.PercentChange, $"{nameof(dailyChange4)}.{nameof(dailyChange4.PercentChange)}");
+            Assert.AreEqual(1, dailyChange4.NewCases, $"{nameof(dailyChange4)}.{nameof(dailyChange4.NewCases)}");
+        }
+
+        [TestMethod]
+        public void Test_Repository_RateOfChangeByCounty_NoRange()
+        {
+            //Arrange
+            var mockSource = new Mock<ICovidDataSource>();
+
+            mockSource.Setup(s => s.GetData()).Returns(() => Task.FromResult(GenerateData()));
+
+            var repository = new CovidDataRepository(mockSource.Object);
+
+            var range = new DateRange(null, null);
+
+            //Act
+            var result = repository.GetRateOfChangeByCounty("Alameda", range)
+                .ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
+
+            //Assert
+            Assert.AreEqual("Alameda", result.Location, nameof(result.Location));
+            Assert.AreEqual("1.234", result.Latitude, nameof(result.Latitude));
+            Assert.AreEqual("5.678", result.Longitude, nameof(result.Longitude));
+            Assert.AreEqual(5, result.DailyRateOfChange.Count, $"{nameof(result.DailyRateOfChange)}.Count");
+
+            var dailyChange0 = result.DailyRateOfChange[0];
+            Assert.AreEqual(DateTime.Now.AddDays(-2).Date, dailyChange0.Date, $"{nameof(dailyChange0)}.{nameof(dailyChange0.Date)}");
+            Assert.AreEqual(0.0, dailyChange0.PercentChange, $"{nameof(dailyChange0)}.{nameof(dailyChange0.PercentChange)}");
+            Assert.AreEqual(0, dailyChange0.NewCases, $"{nameof(dailyChange0)}.{nameof(dailyChange0.NewCases)}");
+
+            var dailyChange1 = result.DailyRateOfChange[1];
+            Assert.AreEqual(DateTime.Now.Date.AddDays(-1).Date, dailyChange1.Date, $"{nameof(dailyChange1)}.{nameof(dailyChange1.Date)}");
+            Assert.AreEqual(25.0, dailyChange1.PercentChange, $"{nameof(dailyChange1)}.{nameof(dailyChange1.PercentChange)}");
+            Assert.AreEqual(1, dailyChange1.NewCases, $"{nameof(dailyChange1)}.{nameof(dailyChange1.NewCases)}");
+
+            var dailyChange2 = result.DailyRateOfChange[2];
+            Assert.AreEqual(DateTime.Now.AddDays(0).Date, dailyChange2.Date, $"{nameof(dailyChange2)}.{nameof(dailyChange2.Date)}");
+            Assert.AreEqual(25.0, dailyChange2.PercentChange, $"{nameof(dailyChange2)}.{nameof(dailyChange2.PercentChange)}");
+            Assert.AreEqual(1, dailyChange2.NewCases, $"{nameof(dailyChange2)}.{nameof(dailyChange2.NewCases)}");
+
+            var dailyChange3 = result.DailyRateOfChange[3];
+            Assert.AreEqual(DateTime.Now.Date.AddDays(1).Date, dailyChange3.Date, $"{nameof(dailyChange3)}.{nameof(dailyChange3.Date)}");
+            Assert.AreEqual(25.0, dailyChange3.PercentChange, $"{nameof(dailyChange3)}.{nameof(dailyChange3.PercentChange)}");
+            Assert.AreEqual(1, dailyChange3.NewCases, $"{nameof(dailyChange3)}.{nameof(dailyChange3.NewCases)}");
+
+            var dailyChange4 = result.DailyRateOfChange[4];
+            Assert.AreEqual(DateTime.Now.AddDays(2).Date, dailyChange4.Date, $"{nameof(dailyChange4)}.{nameof(dailyChange4.Date)}");
+            Assert.AreEqual(25.0, dailyChange4.PercentChange, $"{nameof(dailyChange4)}.{nameof(dailyChange4.PercentChange)}");
+            Assert.AreEqual(1, dailyChange4.NewCases, $"{nameof(dailyChange4)}.{nameof(dailyChange4.NewCases)}");
+        }
+
+        [TestMethod]
+        public void Test_Repository_RateOfChangeByState_InRange()
+        {
+            //Arrange
+            var mockSource = new Mock<ICovidDataSource>();
+
+            mockSource.Setup(s => s.GetData()).Returns(() => Task.FromResult(GenerateData()));
+
+            var repository = new CovidDataRepository(mockSource.Object);
+
+            var range = new DateRange(DateTime.Now.AddDays(-1), DateTime.Now.AddDays(1));
+
+            //Act
+            var result = repository.GetRateOfChangeByState("California", range)
+                .ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
+
+            //Assert
+            Assert.AreEqual("California", result.Location, nameof(result.Location));
+            Assert.AreEqual(string.Empty, result.Latitude, nameof(result.Latitude));
+            Assert.AreEqual(string.Empty, result.Longitude, nameof(result.Longitude));
+            Assert.AreEqual(3, result.DailyRateOfChange.Count, $"{nameof(result.DailyRateOfChange)}.Count");
+
+            var dailyChange0 = result.DailyRateOfChange[0];
+            Assert.AreEqual(DateTime.Now.AddDays(-1).Date, dailyChange0.Date, $"{nameof(dailyChange0)}.{nameof(dailyChange0.Date)}");
+            Assert.AreEqual(33.3, dailyChange0.PercentChange, $"{nameof(dailyChange0)}.{nameof(dailyChange0.PercentChange)}");
+            Assert.AreEqual(3, dailyChange0.NewCases, $"{nameof(dailyChange0)}.{nameof(dailyChange0.NewCases)}");
+
+            var dailyChange1 = result.DailyRateOfChange[1];
+            Assert.AreEqual(DateTime.Now.Date, dailyChange1.Date, $"{nameof(dailyChange1)}.{nameof(dailyChange1.Date)}");
+            Assert.AreEqual(33.3, dailyChange1.PercentChange, $"{nameof(dailyChange1)}.{nameof(dailyChange1.PercentChange)}");
+            Assert.AreEqual(3, dailyChange1.NewCases, $"{nameof(dailyChange1)}.{nameof(dailyChange1.NewCases)}");
+
+            var dailyChange2 = result.DailyRateOfChange[2];
+            Assert.AreEqual(DateTime.Now.AddDays(1).Date, dailyChange2.Date, $"{nameof(dailyChange2)}.{nameof(dailyChange2.Date)}");
+            Assert.AreEqual(33.3, dailyChange2.PercentChange, $"{nameof(dailyChange2)}.{nameof(dailyChange2.PercentChange)}");
+            Assert.AreEqual(3, dailyChange2.NewCases, $"{nameof(dailyChange2)}.{nameof(dailyChange2.NewCases)}");
+        }
+
+        [TestMethod, ExpectedException(typeof(DataNotFoundException))]
+        public void Test_Repository_RateOfChangeByState_StateDoesntExist()
+        {
+            //Arrange
+            var mockSource = new Mock<ICovidDataSource>();
+
+            mockSource.Setup(s => s.GetData()).Returns(() => Task.FromResult(GenerateData()));
+
+            var repository = new CovidDataRepository(mockSource.Object);
+
+            var range = new DateRange(DateTime.Now.AddDays(-1), DateTime.Now.AddDays(1));
+
+            //Act
+            var result = repository.GetRateOfChangeByState("Not A State", range)
+                .ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
+
+            //Assert
+            //Expect Exception
+        }
+
+        [TestMethod]
+        public void Test_Repository_RateOfChangeByState_OutOfRange()
+        {
+            //Arrange
+            var mockSource = new Mock<ICovidDataSource>();
+
+            mockSource.Setup(s => s.GetData()).Returns(() => Task.FromResult(GenerateData()));
+
+            var repository = new CovidDataRepository(mockSource.Object);
+
+            var range = new DateRange(DateTime.Now.AddDays(-3), DateTime.Now.AddDays(3));
+
+            //Act
+            var result = repository.GetRateOfChangeByState("California", range)
+                .ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
+
+            //Assert
+            Assert.AreEqual("California", result.Location, nameof(result.Location));
+            Assert.AreEqual(string.Empty, result.Latitude, nameof(result.Latitude));
+            Assert.AreEqual(string.Empty, result.Longitude, nameof(result.Longitude));
+            Assert.AreEqual(5, result.DailyRateOfChange.Count, $"{nameof(result.DailyRateOfChange)}.Count");
+
+            var dailyChange0 = result.DailyRateOfChange[0];
+            Assert.AreEqual(DateTime.Now.AddDays(-2).Date, dailyChange0.Date, $"{nameof(dailyChange0)}.{nameof(dailyChange0.Date)}");
+            Assert.AreEqual(0.0, dailyChange0.PercentChange, $"{nameof(dailyChange0)}.{nameof(dailyChange0.PercentChange)}");
+            Assert.AreEqual(0, dailyChange0.NewCases, $"{nameof(dailyChange0)}.{nameof(dailyChange0.NewCases)}");
+
+            var dailyChange1 = result.DailyRateOfChange[1];
+            Assert.AreEqual(DateTime.Now.Date.AddDays(-1).Date, dailyChange1.Date, $"{nameof(dailyChange1)}.{nameof(dailyChange1.Date)}");
+            Assert.AreEqual(25.0, dailyChange1.PercentChange, $"{nameof(dailyChange1)}.{nameof(dailyChange1.PercentChange)}");
+            Assert.AreEqual(3, dailyChange1.NewCases, $"{nameof(dailyChange1)}.{nameof(dailyChange1.NewCases)}");
+
+            var dailyChange2 = result.DailyRateOfChange[2];
+            Assert.AreEqual(DateTime.Now.AddDays(0).Date, dailyChange2.Date, $"{nameof(dailyChange2)}.{nameof(dailyChange2.Date)}");
+            Assert.AreEqual(25.0, dailyChange2.PercentChange, $"{nameof(dailyChange2)}.{nameof(dailyChange2.PercentChange)}");
+            Assert.AreEqual(3, dailyChange2.NewCases, $"{nameof(dailyChange2)}.{nameof(dailyChange2.NewCases)}");
+
+            var dailyChange3 = result.DailyRateOfChange[3];
+            Assert.AreEqual(DateTime.Now.Date.AddDays(1).Date, dailyChange3.Date, $"{nameof(dailyChange3)}.{nameof(dailyChange3.Date)}");
+            Assert.AreEqual(25.0, dailyChange3.PercentChange, $"{nameof(dailyChange3)}.{nameof(dailyChange3.PercentChange)}");
+            Assert.AreEqual(3, dailyChange3.NewCases, $"{nameof(dailyChange3)}.{nameof(dailyChange3.NewCases)}");
+
+            var dailyChange4 = result.DailyRateOfChange[4];
+            Assert.AreEqual(DateTime.Now.AddDays(2).Date, dailyChange4.Date, $"{nameof(dailyChange4)}.{nameof(dailyChange4.Date)}");
+            Assert.AreEqual(25.0, dailyChange4.PercentChange, $"{nameof(dailyChange4)}.{nameof(dailyChange4.PercentChange)}");
+            Assert.AreEqual(3, dailyChange4.NewCases, $"{nameof(dailyChange4)}.{nameof(dailyChange4.NewCases)}");
+        }
+
+        [TestMethod]
+        public void Test_Repository_RateOfChangeByState_NoRange()
+        {
+            //Arrange
+            var mockSource = new Mock<ICovidDataSource>();
+
+            mockSource.Setup(s => s.GetData()).Returns(() => Task.FromResult(GenerateData()));
+
+            var repository = new CovidDataRepository(mockSource.Object);
+
+            var range = new DateRange(null, null);
+
+            //Act
+            var result = repository.GetRateOfChangeByState("California", range)
+                .ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
+
+            //Assert
+            Assert.AreEqual("California", result.Location, nameof(result.Location));
+            Assert.AreEqual(string.Empty, result.Latitude, nameof(result.Latitude));
+            Assert.AreEqual(string.Empty, result.Longitude, nameof(result.Longitude));
+            Assert.AreEqual(5, result.DailyRateOfChange.Count, $"{nameof(result.DailyRateOfChange)}.Count");
+
+            var dailyChange0 = result.DailyRateOfChange[0];
+            Assert.AreEqual(DateTime.Now.AddDays(-2).Date, dailyChange0.Date, $"{nameof(dailyChange0)}.{nameof(dailyChange0.Date)}");
+            Assert.AreEqual(0.0, dailyChange0.PercentChange, $"{nameof(dailyChange0)}.{nameof(dailyChange0.PercentChange)}");
+            Assert.AreEqual(0, dailyChange0.NewCases, $"{nameof(dailyChange0)}.{nameof(dailyChange0.NewCases)}");
+
+            var dailyChange1 = result.DailyRateOfChange[1];
+            Assert.AreEqual(DateTime.Now.Date.AddDays(-1).Date, dailyChange1.Date, $"{nameof(dailyChange1)}.{nameof(dailyChange1.Date)}");
+            Assert.AreEqual(25.0, dailyChange1.PercentChange, $"{nameof(dailyChange1)}.{nameof(dailyChange1.PercentChange)}");
+            Assert.AreEqual(3, dailyChange1.NewCases, $"{nameof(dailyChange1)}.{nameof(dailyChange1.NewCases)}");
+
+            var dailyChange2 = result.DailyRateOfChange[2];
+            Assert.AreEqual(DateTime.Now.AddDays(0).Date, dailyChange2.Date, $"{nameof(dailyChange2)}.{nameof(dailyChange2.Date)}");
+            Assert.AreEqual(25.0, dailyChange2.PercentChange, $"{nameof(dailyChange2)}.{nameof(dailyChange2.PercentChange)}");
+            Assert.AreEqual(3, dailyChange2.NewCases, $"{nameof(dailyChange2)}.{nameof(dailyChange2.NewCases)}");
+
+            var dailyChange3 = result.DailyRateOfChange[3];
+            Assert.AreEqual(DateTime.Now.Date.AddDays(1).Date, dailyChange3.Date, $"{nameof(dailyChange3)}.{nameof(dailyChange3.Date)}");
+            Assert.AreEqual(25.0, dailyChange3.PercentChange, $"{nameof(dailyChange3)}.{nameof(dailyChange3.PercentChange)}");
+            Assert.AreEqual(3, dailyChange3.NewCases, $"{nameof(dailyChange3)}.{nameof(dailyChange3.NewCases)}");
+
+            var dailyChange4 = result.DailyRateOfChange[4];
+            Assert.AreEqual(DateTime.Now.AddDays(2).Date, dailyChange4.Date, $"{nameof(dailyChange4)}.{nameof(dailyChange4.Date)}");
+            Assert.AreEqual(25.0, dailyChange4.PercentChange, $"{nameof(dailyChange4)}.{nameof(dailyChange4.PercentChange)}");
+            Assert.AreEqual(3, dailyChange4.NewCases, $"{nameof(dailyChange4)}.{nameof(dailyChange4.NewCases)}");
+        }
+
         private IList<CovidDataRow> GenerateData()
         {
             return new List<CovidDataRow>()
