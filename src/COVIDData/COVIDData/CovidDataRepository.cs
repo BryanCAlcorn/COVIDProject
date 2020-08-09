@@ -1,4 +1,5 @@
 ﻿using COVIDData.Exceptions;
+using COVIDData.Extensions;
 using COVIDData.Interfaces;
 using COVIDData.Models;
 using System;
@@ -70,23 +71,8 @@ namespace COVIDData
                     maxCases = countyRow.ConfirmedCases[maxDate];
                 }
 
-                if (dict.ContainsKey(minDate))
-                {
-                    dict[minDate] += minCases;
-                }
-                else
-                {
-                    dict[minDate] = minCases;
-                }
-
-                if (dict.ContainsKey(maxDate))
-                {
-                    dict[maxDate] += maxCases;
-                }
-                else
-                {
-                    dict[maxDate] = maxCases;
-                }
+                dict.AddOrUpdateValue(minDate, minCases);
+                dict.AddOrUpdateValue(maxDate, maxCases);
 
                 return dict;
             });
@@ -138,14 +124,7 @@ namespace COVIDData
 
                 foreach(var cases in casesInRange)
                 {
-                    if (dict.ContainsKey(cases.Key))
-                    {
-                        dict[cases.Key] += cases.Value;
-                    }
-                    else
-                    {
-                        dict[cases.Key] = cases.Value;
-                    }
+                    dict.AddOrUpdateValue(cases.Key, cases.Value);
                 }
 
                 return dict;
@@ -209,14 +188,7 @@ namespace COVIDData
 
                 foreach (var cases in casesInRange)
                 {
-                    if (dict.ContainsKey(cases.Key))
-                    {
-                        dict[cases.Key] += cases.Value;
-                    }
-                    else
-                    {
-                        dict[cases.Key] = cases.Value;
-                    }
+                    dict.AddOrUpdateValue(cases.Key, cases.Value);
                 }
 
                 return dict;
@@ -268,6 +240,5 @@ namespace COVIDData
             }
             return _covidData;
         }
-
     }
 }
