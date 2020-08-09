@@ -53,6 +53,7 @@ namespace COVIDData
 
             var stateTotals = stateRows.Aggregate(new Dictionary<DateTime, int>(), (dict, countyRow) =>
             {
+                //TODO: Factor this into a separate method.
                 var minDate = range.StartDate;
                 if (!countyRow.ConfirmedCases.TryGetValue(minDate, out var minCases))
                 {
