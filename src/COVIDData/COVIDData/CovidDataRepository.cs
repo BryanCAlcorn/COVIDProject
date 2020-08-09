@@ -22,10 +22,7 @@ namespace COVIDData
 
         public async Task<CovidQueryResult> QueryByCounty(string county, DateRange range)
         {
-            var data = await CovidData();
-
-            var countyRow = data.FirstOrDefault(d => string.Equals(d.County, county, StringComparison.OrdinalIgnoreCase));
-            if (countyRow == null) throw new DataNotFoundException($"County {county} not available in data set.", nameof(county));
+            var countyRow = await GetDataForCounty(county);
 
             var minCases = countyRow.ConfirmedCases.GetValueOrMin(range.StartDate, out var minDate);
             var maxCases = countyRow.ConfirmedCases.GetValueOrMax(range.EndDate, out var maxDate);
@@ -39,10 +36,7 @@ namespace COVIDData
 
         public async Task<CovidQueryResult> QueryByState(string state, DateRange range)
         {
-            var data = await CovidData();
-
-            var stateRows = data.Where(d => string.Equals(d.ProvinceState, state, StringComparison.OrdinalIgnoreCase));
-            if (!stateRows.Any()) throw new DataNotFoundException($"State {state} not available in data set", nameof(state));
+            var stateRows = await GetDataForState(state);
 
             var stateTotals = stateRows.Aggregate(new Dictionary<DateTime, int>(), (dict, countyRow) =>
             {
@@ -68,10 +62,7 @@ namespace COVIDData
 
         public async Task<DailyBreakdownResult> GetDailyBreakdownByCounty(string county, DateRange range)
         {
-            var data = await CovidData();
-
-            var countyRow = data.FirstOrDefault(d => string.Equals(d.County, county, StringComparison.OrdinalIgnoreCase));
-            if (countyRow == null) throw new DataNotFoundException($"County {county} not available in data set.", nameof(county));
+            var countyRow = await GetDataForCounty(county);
 
             var orderedCasesInRange = countyRow.ConfirmedCases.Where(kvp => range.Contains(kvp.Key)).OrderBy(kvp => kvp.Key);
 
@@ -90,10 +81,7 @@ namespace COVIDData
 
         public async Task<DailyBreakdownResult> GetDailyBreakdownByState(string state, DateRange range)
         {
-            var data = await CovidData();
-
-            var stateRows = data.Where(d => string.Equals(d.ProvinceState, state, StringComparison.OrdinalIgnoreCase));
-            if (!stateRows.Any()) throw new DataNotFoundException($"State {state} not available in data set", nameof(state));
+            var stateRows = await GetDataForState(state);
 
             var stateTotalsInRange = stateRows.Aggregate(new Dictionary<DateTime, int>(), (dict, countyRow) =>
             {
@@ -124,10 +112,7 @@ namespace COVIDData
 
         public async Task<RateOfChangeResult> GetRateOfChangeByCounty(string county, DateRange range)
         {
-            var data = await CovidData();
-
-            var countyRow = data.FirstOrDefault(d => string.Equals(d.County, county, StringComparison.OrdinalIgnoreCase));
-            if (countyRow == null) throw new DataNotFoundException($"County {county} not available in data set.", nameof(county));
+            var countyRow = await GetDataForCounty(county);
 
             var orderedCasesInRange = countyRow.ConfirmedCases.Where(kvp => range.Contains(kvp.Key)).OrderBy(kvp => kvp.Key);
 
@@ -154,10 +139,7 @@ namespace COVIDData
 
         public async Task<RateOfChangeResult> GetRateOfChangeByState(string state, DateRange range)
         {
-            var data = await CovidData();
-
-            var stateRows = data.Where(d => string.Equals(d.ProvinceState, state, StringComparison.OrdinalIgnoreCase));
-            if (!stateRows.Any()) throw new DataNotFoundException($"State {state} not available in data set", nameof(state));
+            var stateRows = await GetDataForState(state);
 
             var stateTotalsInRange = stateRows.Aggregate(new Dictionary<DateTime, int>(), (dict, countyRow) =>
             {
@@ -209,6 +191,26 @@ namespace COVIDData
             }
         }
 
+        private async Task<CovidDataRow> GetDataForCounty(string county)
+        {
+            var data = await CovidData();
+
+            var countyRow = data.FirstOrDefault(d => string.Equals(d.County, county, StringComparison.OrdinalIgnoreCase));
+            if (countyRow == null) throw new DataNotFoundException($"County {county} not available in data set.", nameof(county));
+
+            return countyRow;
+        }
+
+        private async Task<IEnumerable<CovidDataRow>> GetDataForState(string state)
+        {
+            var data = await CovidData();
+
+            var stateRows = data.Where(d => string.Equals(d.ProvinceState, state, StringComparison.OrdinalIgnoreCase));
+            if (!stateRows.Any()) throw new DataNotFoundException($"State {state} not available in data set", nameof(state));
+
+            return stateRows;
+        }
+
         private async Task<IList<CovidDataRow>> CovidData()
         {
             if (_covidData == null ||
@@ -218,6 +220,7 @@ namespace COVIDData
                 _covidData = await _covidDataSource.GetData();
                 _fetchDate = DateTime.Now;
             }
+
             return _covidData;
         }
     }
