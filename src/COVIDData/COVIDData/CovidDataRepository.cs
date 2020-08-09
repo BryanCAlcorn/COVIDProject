@@ -76,6 +76,22 @@ namespace COVIDData
             return GetDailyBreakdown(state, string.Empty, string.Empty, stateTotalsInRange);
         }
 
+        public async Task<RateOfChangeResult> GetRateOfChangeByCounty(string county, DateRange range)
+        {
+            var countyRow = await GetDataForCounty(county);
+
+            return GetRateOfChange(county, countyRow.Latitude, countyRow.Longitude, countyRow.ConfirmedCases);
+        }
+
+        public async Task<RateOfChangeResult> GetRateOfChangeByState(string state, DateRange range)
+        {
+            var stateRows = await GetDataForState(state);
+
+            var stateTotalsInRange = AggregateCaseTotalsOverRange(stateRows, range);
+
+            return GetRateOfChange(state, string.Empty, string.Empty, stateTotalsInRange);
+        }
+
         private DailyBreakdownResult GetDailyBreakdown(string location, string latitude, string longitude, 
             IReadOnlyDictionary<DateTime, int> locationData)
         {
@@ -92,22 +108,6 @@ namespace COVIDData
             }
 
             return new DailyBreakdownResult(location, latitude, longitude, dailyChanges);
-        }
-
-        public async Task<RateOfChangeResult> GetRateOfChangeByCounty(string county, DateRange range)
-        {
-            var countyRow = await GetDataForCounty(county);
-
-            return GetRateOfChange(county, countyRow.Latitude, countyRow.Longitude, countyRow.ConfirmedCases);
-        }
-
-        public async Task<RateOfChangeResult> GetRateOfChangeByState(string state, DateRange range)
-        {
-            var stateRows = await GetDataForState(state);
-
-            var stateTotalsInRange = AggregateCaseTotalsOverRange(stateRows, range);
-
-            return GetRateOfChange(state, string.Empty, string.Empty, stateTotalsInRange);
         }
 
         private RateOfChangeResult GetRateOfChange(string location, string latitude, string longitude,
