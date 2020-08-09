@@ -13,7 +13,7 @@ namespace COVIDTests
     public class CovidDataRepositoryTests
     {
         [TestMethod]
-        public void Test_Repository_QueryByCounty()
+        public void Test_Repository_QueryByCounty_InRange()
         {
             //Arrange
             var mockSource = new Mock<ICovidDataSource>();
@@ -40,7 +40,34 @@ namespace COVIDTests
         }
 
         [TestMethod]
-        public void Test_Repository_QueryByState()
+        public void Test_Repository_QueryByCounty_OutOfRange()
+        {
+            //Arrange
+            var mockSource = new Mock<ICovidDataSource>();
+
+            mockSource.Setup(s => s.GetData()).Returns(() => Task.FromResult(GenerateData()));
+
+            var repository = new CovidDataRepository(mockSource.Object);
+
+            var range = new DateRange(DateTime.Now.AddDays(-3), DateTime.Now.AddDays(3));
+
+            //Act
+            var result = repository.QueryByCounty("Alameda", range)
+                .ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
+
+            //Assert
+            Assert.AreEqual("Alameda", result.Location, nameof(result.Location));
+            Assert.AreEqual("1.234", result.Latitude, nameof(result.Latitude));
+            Assert.AreEqual("5.678", result.Longitude, nameof(result.Longitude));
+            Assert.AreEqual(0, result.MinimumCaseCount, nameof(result.MinimumCaseCount));
+            Assert.AreEqual(DateTime.Now.AddDays(-2).Date, result.MinimumCaseDate, nameof(result.MinimumCaseDate));
+            Assert.AreEqual(4, result.MaximumCaseCount, nameof(result.MaximumCaseCount));
+            Assert.AreEqual(DateTime.Now.AddDays(2).Date, result.MaximumCaseDate, nameof(result.MaximumCaseDate));
+            Assert.AreEqual(1.0, result.AverageDailyCases, nameof(result.AverageDailyCases));
+        }
+
+        [TestMethod]
+        public void Test_Repository_QueryByState_InRange()
         {
             //Arrange
             var mockSource = new Mock<ICovidDataSource>();
@@ -66,6 +93,33 @@ namespace COVIDTests
             Assert.AreEqual(3.0, result.AverageDailyCases, nameof(result.AverageDailyCases));
         }
 
+        [TestMethod]
+        public void Test_Repository_QueryByState_OutOfRange()
+        {
+            //Arrange
+            var mockSource = new Mock<ICovidDataSource>();
+
+            mockSource.Setup(s => s.GetData()).Returns(() => Task.FromResult(GenerateData()));
+
+            var repository = new CovidDataRepository(mockSource.Object);
+
+            var range = new DateRange(DateTime.Now.AddDays(-3), DateTime.Now.AddDays(3));
+
+            //Act
+            var result = repository.QueryByState("California", range)
+                .ConfigureAwait(continueOnCapturedContext: false).GetAwaiter().GetResult();
+
+            //Assert
+            Assert.AreEqual("California", result.Location, nameof(result.Location));
+            Assert.AreEqual(string.Empty, result.Latitude, nameof(result.Latitude));
+            Assert.AreEqual(string.Empty, result.Longitude, nameof(result.Longitude));
+            Assert.AreEqual(0, result.MinimumCaseCount, nameof(result.MinimumCaseCount));
+            Assert.AreEqual(DateTime.Now.AddDays(-2).Date, result.MinimumCaseDate, nameof(result.MinimumCaseDate));
+            Assert.AreEqual(12, result.MaximumCaseCount, nameof(result.MaximumCaseCount));
+            Assert.AreEqual(DateTime.Now.AddDays(2).Date, result.MaximumCaseDate, nameof(result.MaximumCaseDate));
+            Assert.AreEqual(3.0, result.AverageDailyCases, nameof(result.AverageDailyCases));
+        }
+
         private IList<CovidDataRow> GenerateData()
         {
             return new List<CovidDataRow>()
@@ -88,7 +142,7 @@ namespace COVIDTests
                 }),
                 new CovidDataRow("Contra Costa", "Utah", "9.999", "9.999", new Dictionary<DateTime, int>()
                 {
-                    { DateTime.Now.AddDays(-2).Date, 0 },
+                    { DateTime.Now.AddDays(-2).Date, 9 },
                     { DateTime.Now.AddDays(-1).Date, 99 },
                     { DateTime.Now.Date, 999 },
                     { DateTime.Now.AddDays(1).Date, 9999 },

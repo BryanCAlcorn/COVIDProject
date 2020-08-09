@@ -22,13 +22,25 @@ namespace COVIDData
 
             var countyRow = data.First(d => string.Equals(d.County, county, StringComparison.OrdinalIgnoreCase));
 
-            var minCases = countyRow.ConfirmedCases[range.StartDate];
-            var maxCases = countyRow.ConfirmedCases[range.EndDate];
-            
-            var averageCases = GetAverage(minCases, maxCases, range.TotalDays);
+            var minDate = range.StartDate;
+            if(!countyRow.ConfirmedCases.TryGetValue(minDate, out var minCases))
+            {
+                minDate = countyRow.ConfirmedCases.Keys.Min();
+                minCases = countyRow.ConfirmedCases[minDate];
+            }
+
+            var maxDate = range.EndDate;
+            if(!countyRow.ConfirmedCases.TryGetValue(maxDate, out var maxCases))
+            {
+                maxDate = countyRow.ConfirmedCases.Keys.Max();
+                maxCases = countyRow.ConfirmedCases[maxDate];
+            }
+
+            var totalDays = (maxDate - minDate).TotalDays;
+            var averageCases = GetAverage(minCases, maxCases, totalDays);
 
             return new CovidQueryResult(county, countyRow.Latitude, countyRow.Longitude,
-                averageCases, minCases, range.StartDate, maxCases, range.EndDate);
+                averageCases, minCases, minDate, maxCases, maxDate);
         }
 
         public async Task<CovidQueryResult> QueryByState(string state, DateRange range)
@@ -37,39 +49,53 @@ namespace COVIDData
 
             var stateRows = data.Where(d => string.Equals(d.ProvinceState, state, StringComparison.OrdinalIgnoreCase));
 
-            var stateTotals = stateRows.Aggregate(new Dictionary<DateTime, int>(), (dict, county) =>
+            var stateTotals = stateRows.Aggregate(new Dictionary<DateTime, int>(), (dict, countyRow) =>
             {
-                var countyStartCases = county.ConfirmedCases[range.StartDate];
-                var countyEndCases = county.ConfirmedCases[range.EndDate];
-                
-                if (dict.ContainsKey(range.StartDate))
+                var minDate = range.StartDate;
+                if (!countyRow.ConfirmedCases.TryGetValue(minDate, out var minCases))
                 {
-                    dict[range.StartDate] += countyStartCases;
-                }
-                else
-                {
-                    dict[range.StartDate] = countyStartCases;
+                    minDate = countyRow.ConfirmedCases.Keys.Min();
+                    minCases = countyRow.ConfirmedCases[minDate];
                 }
 
-                if (dict.ContainsKey(range.EndDate))
+                var maxDate = range.EndDate;
+                if (!countyRow.ConfirmedCases.TryGetValue(maxDate, out var maxCases))
                 {
-                    dict[range.EndDate] += countyEndCases;
+                    maxDate = countyRow.ConfirmedCases.Keys.Max();
+                    maxCases = countyRow.ConfirmedCases[maxDate];
+                }
+
+                if (dict.ContainsKey(minDate))
+                {
+                    dict[minDate] += minCases;
                 }
                 else
                 {
-                    dict[range.EndDate] = countyEndCases;
+                    dict[minDate] = minCases;
+                }
+
+                if (dict.ContainsKey(maxDate))
+                {
+                    dict[maxDate] += maxCases;
+                }
+                else
+                {
+                    dict[maxDate] = maxCases;
                 }
 
                 return dict;
             });
 
-            var minCases = stateTotals[range.StartDate];
-            var maxCases = stateTotals[range.EndDate];
+            var minDate = stateTotals.Keys.Min();
+            var maxDate = stateTotals.Keys.Max();
+            var minCases = stateTotals[minDate];
+            var maxCases = stateTotals[maxDate];
+            var totalDays = (maxDate - minDate).TotalDays;
 
-            var averageCases = GetAverage(minCases, maxCases, range.TotalDays);
+            var averageCases = GetAverage(minCases, maxCases, totalDays);
 
             return new CovidQueryResult(state, string.Empty, string.Empty,
-                averageCases, minCases, range.StartDate, maxCases, range.EndDate);
+                averageCases, minCases, minDate, maxCases, maxDate);
         }
 
         private double GetAverage(int minCases, int maxCases, double days)
