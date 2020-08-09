@@ -23,4 +23,5 @@ Has several namespaces:
    - Exceptions: Custom exceptions for the library
    - Extensions: Utility methods for classes outside our control
 
-The solution also includes a unit test suite written in MSTest and using Moq.
+### COVIDTests
+A unit test suite written in MSTest and using Moq.
