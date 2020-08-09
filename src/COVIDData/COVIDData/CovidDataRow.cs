@@ -83,9 +83,12 @@ namespace COVIDData
             ConfirmedCases = caseTotals;
         }
 
-        public CovidDataRow(string county, string provinceState, Dictionary<DateTime, int> cases)
+        public CovidDataRow(string county, string provinceState, string latitude, string longitude,
+            Dictionary<DateTime, int> cases)
         {
             County = county;
+            Latitude = latitude;
+            Longitude = longitude;
             ProvinceState = provinceState;
             ConfirmedCases = cases;
             //TODO: Should fill rest of values...
