@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -99,6 +98,69 @@ namespace COVIDData
 
             return new CovidQueryResult(state, string.Empty, string.Empty,
                 averageCases, minCases, minDate, maxCases, maxDate);
+        }
+
+        public async Task<DailyBreakdownResult> GetDailyBreakdownByCounty(string county, DateRange range)
+        {
+            var data = await CovidData();
+
+            var countyRow = data.FirstOrDefault(d => string.Equals(d.County, county, StringComparison.OrdinalIgnoreCase));
+            if (countyRow == null) throw new DataNotFoundException($"County {county} not available in data set.", nameof(county));
+
+            var orderedCasesInRange = countyRow.ConfirmedCases.Where(kvp => range.Contains(kvp.Key)).OrderByDescending(kvp => kvp.Key);
+
+            var dailyChanges = new List<DailyChange>();
+
+            var prevCases = 0;
+            foreach(var dailyCases in orderedCasesInRange)
+            {
+                var change = new DailyChange(dailyCases.Key, dailyCases.Value, dailyCases.Value - prevCases);
+                prevCases = dailyCases.Value;
+                dailyChanges.Add(change);
+            }
+
+            return new DailyBreakdownResult(county, countyRow.Latitude, countyRow.Longitude, dailyChanges);
+        }
+
+        public async Task<DailyBreakdownResult> GetDailyBreakdownByState(string state, DateRange range)
+        {
+            var data = await CovidData();
+
+            var stateRows = data.Where(d => string.Equals(d.ProvinceState, state, StringComparison.OrdinalIgnoreCase));
+            if (!stateRows.Any()) throw new DataNotFoundException($"State {state} not available in data set", nameof(state));
+
+            var stateTotalsInRange = stateRows.Aggregate(new Dictionary<DateTime, int>(), (dict, countyRow) =>
+            {
+                var casesInRange = countyRow.ConfirmedCases.Where(kvp => range.Contains(kvp.Key));
+
+                foreach(var cases in casesInRange)
+                {
+                    if (dict.ContainsKey(cases.Key))
+                    {
+                        dict[cases.Key] += cases.Value;
+                    }
+                    else
+                    {
+                        dict[cases.Key] = cases.Value;
+                    }
+                }
+
+                return dict;
+            });
+
+            var orderedCasesInRange = stateTotalsInRange.OrderBy(kvp => kvp.Key);
+
+            var dailyChanges = new List<DailyChange>();
+
+            var prevCases = 0;
+            foreach (var dailyCases in orderedCasesInRange)
+            {
+                var change = new DailyChange(dailyCases.Key, dailyCases.Value, dailyCases.Value - prevCases);
+                prevCases = dailyCases.Value;
+                dailyChanges.Add(change);
+            }
+
+            return new DailyBreakdownResult(state, string.Empty, string.Empty, dailyChanges);
         }
 
         private double GetAverage(int minCases, int maxCases, double days)
