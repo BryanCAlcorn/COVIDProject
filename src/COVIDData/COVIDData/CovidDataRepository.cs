@@ -71,17 +71,7 @@ namespace COVIDData
         {
             var stateRows = await GetDataForState(state);
 
-            var stateTotalsInRange = stateRows.Aggregate(new Dictionary<DateTime, int>(), (dict, countyRow) =>
-            {
-                var casesInRange = countyRow.ConfirmedCases.Where(kvp => range.Contains(kvp.Key));
-
-                foreach(var cases in casesInRange)
-                {
-                    dict.AddOrUpdateValue(cases.Key, cases.Value);
-                }
-
-                return dict;
-            });
+            var stateTotalsInRange = AggregateCaseTotalsOverRange(stateRows, range);
 
             return GetDailyBreakdown(state, string.Empty, string.Empty, stateTotalsInRange);
         }
@@ -115,17 +105,7 @@ namespace COVIDData
         {
             var stateRows = await GetDataForState(state);
 
-            var stateTotalsInRange = stateRows.Aggregate(new Dictionary<DateTime, int>(), (dict, countyRow) =>
-            {
-                var casesInRange = countyRow.ConfirmedCases.Where(kvp => range.Contains(kvp.Key));
-
-                foreach (var cases in casesInRange)
-                {
-                    dict.AddOrUpdateValue(cases.Key, cases.Value);
-                }
-
-                return dict;
-            });
+            var stateTotalsInRange = AggregateCaseTotalsOverRange(stateRows, range);
 
             return GetRateOfChange(state, string.Empty, string.Empty, stateTotalsInRange);
         }
@@ -194,6 +174,21 @@ namespace COVIDData
             if (!stateRows.Any()) throw new DataNotFoundException($"State {state} not available in data set", nameof(state));
 
             return stateRows;
+        }
+
+        private IReadOnlyDictionary<DateTime, int> AggregateCaseTotalsOverRange(IEnumerable<CovidDataRow> rowsToAgg, DateRange range)
+        {
+            return rowsToAgg.Aggregate(new Dictionary<DateTime, int>(), (dict, countyRow) =>
+            {
+                var casesInRange = countyRow.ConfirmedCases.Where(kvp => range.Contains(kvp.Key));
+
+                foreach (var cases in casesInRange)
+                {
+                    dict.AddOrUpdateValue(cases.Key, cases.Value);
+                }
+
+                return dict;
+            });
         }
 
         private async Task<IList<CovidDataRow>> CovidData()
