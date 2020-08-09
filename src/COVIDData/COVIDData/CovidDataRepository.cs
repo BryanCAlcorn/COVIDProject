@@ -13,6 +13,7 @@ namespace COVIDData
     {
         private ICovidDataSource _covidDataSource;
         private IList<CovidDataRow> _covidData;
+        private DateTime _fetchDate;
 
         public CovidDataRepository(ICovidDataSource dataSource)
         {
@@ -210,9 +211,12 @@ namespace COVIDData
 
         private async Task<IList<CovidDataRow>> CovidData()
         {
-            if (_covidData == null)
+            if (_covidData == null ||
+                //Re-Fetch cached data every day.
+                (DateTime.Now - _fetchDate).TotalDays > 1)
             {
                 _covidData = await _covidDataSource.GetData();
+                _fetchDate = DateTime.Now;
             }
             return _covidData;
         }
