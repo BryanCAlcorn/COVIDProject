@@ -12,7 +12,7 @@ namespace COVIDData
     public class CovidDataRepository : ICovidDataRepository
     {
         private ICovidDataSource _covidDataSource;
-        private IList<CovidDataRow> _covidData;
+        private IList<CovidDataRow> _cachedCovidData;
         private DateTime _fetchDate;
 
         public CovidDataRepository(ICovidDataSource dataSource)
@@ -38,16 +38,7 @@ namespace COVIDData
         {
             var stateRows = await GetDataForState(state);
 
-            var stateTotals = stateRows.Aggregate(new Dictionary<DateTime, int>(), (dict, countyRow) =>
-            {
-                var minCases = countyRow.ConfirmedCases.GetValueOrMin(range.StartDate, out var minDate);
-                var maxCases = countyRow.ConfirmedCases.GetValueOrMax(range.EndDate, out var maxDate);
-
-                dict.AddOrUpdateValue(minDate, minCases);
-                dict.AddOrUpdateValue(maxDate, maxCases);
-
-                return dict;
-            });
+            var stateTotals = AggregateCaseTotalsOverRange(stateRows, range);
 
             var minDate = stateTotals.Keys.Min();
             var maxDate = stateTotals.Keys.Max();
@@ -193,15 +184,15 @@ namespace COVIDData
 
         private async Task<IList<CovidDataRow>> CovidData()
         {
-            if (_covidData == null ||
+            if (_cachedCovidData == null ||
                 //Re-Fetch cached data every day.
                 (DateTime.Now - _fetchDate).TotalDays > 1)
             {
-                _covidData = await _covidDataSource.GetData();
+                _cachedCovidData = await _covidDataSource.GetData();
                 _fetchDate = DateTime.Now;
             }
 
-            return _covidData;
+            return _cachedCovidData;
         }
     }
 }
