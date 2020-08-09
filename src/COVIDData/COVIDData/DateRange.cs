@@ -11,6 +11,8 @@ namespace COVIDData
         {
             StartDate = (startDate ?? DateTime.MinValue).Date;
             EndDate = (endDate ?? DateTime.MaxValue).Date;
+
+            if(TotalDays <= 0) throw new DatesOutOfRangeException($"{nameof(startDate)} must be earlier than {nameof(endDate)}")
         }
 
         public DateTime StartDate { get; }

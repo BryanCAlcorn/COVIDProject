@@ -22,7 +22,6 @@ namespace COVIDApp.Controllers
             try
             {
                 var dateRange = new DateRange(startDate, endDate);
-                if (dateRange.TotalDays <= 0) return BadRequest($"{nameof(startDate)} must be earlier than {nameof(endDate)}");
 
                 if (!string.IsNullOrEmpty(county))
                 {
@@ -37,7 +36,11 @@ namespace COVIDApp.Controllers
                     return NotFound();
                 }
             }
-            catch(DataNotFoundException dex)
+            catch (DatesOutOfRangeException)
+            {
+                return BadRequest($"{nameof(startDate)} must be earlier than {nameof(endDate)}");
+            }
+            catch (DataNotFoundException dex)
             {
                 Console.WriteLine(dex);
                 return NotFound(string.IsNullOrEmpty(county) ? state : county);
@@ -55,7 +58,6 @@ namespace COVIDApp.Controllers
             try
             {
                 var dateRange = new DateRange(startDate, endDate);
-                if (dateRange.TotalDays <= 0) return BadRequest($"{nameof(startDate)} must be earlier than {nameof(endDate)}");
 
                 if (!string.IsNullOrEmpty(county))
                 {
@@ -69,6 +71,10 @@ namespace COVIDApp.Controllers
                 {
                     return NotFound();
                 }
+            }
+            catch (DatesOutOfRangeException)
+            {
+                return BadRequest($"{nameof(startDate)} must be earlier than {nameof(endDate)}");
             }
             catch (DataNotFoundException dex)
             {
@@ -85,7 +91,37 @@ namespace COVIDApp.Controllers
         [HttpGet, Route("change")]
         public async Task<IActionResult> RateOfChange(string county, string state, DateTime? startDate, DateTime? endDate)
         {
-            return NotFound();
+            try
+            {
+                var dateRange = new DateRange(startDate, endDate);
+
+                if (!string.IsNullOrEmpty(county))
+                {
+                    return Ok(await _dataRepository.GetRateOfChangeByCounty(county, dateRange));
+                }
+                else if (!string.IsNullOrEmpty(state))
+                {
+                    return Ok(await _dataRepository.GetRateOfChangeByState(state, dateRange));
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+            catch (DatesOutOfRangeException)
+            {
+                return BadRequest($"{nameof(startDate)} must be earlier than {nameof(endDate)}");
+            }
+            catch (DataNotFoundException dex)
+            {
+                Console.WriteLine(dex);
+                return NotFound(string.IsNullOrEmpty(county) ? state : county);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return Problem();
+            }
         }
     }
 }

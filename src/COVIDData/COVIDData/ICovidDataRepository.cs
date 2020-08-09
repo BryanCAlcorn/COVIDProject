@@ -11,5 +11,9 @@ namespace COVIDData
         Task<DailyBreakdownResult> GetDailyBreakdownByCounty(string county, DateRange range);
 
         Task<DailyBreakdownResult> GetDailyBreakdownByState(string state, DateRange range);
+
+        Task<RateOfChangeResult> GetRateOfChangeByCounty(string county, DateRange range);
+
+        Task<RateOfChangeResult> GetRateOfChangeByState(string state, DateRange range);
     }
 }
