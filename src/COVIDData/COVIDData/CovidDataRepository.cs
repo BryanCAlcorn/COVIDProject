@@ -64,19 +64,7 @@ namespace COVIDData
         {
             var countyRow = await GetDataForCounty(county);
 
-            var orderedCasesInRange = countyRow.ConfirmedCases.Where(kvp => range.Contains(kvp.Key)).OrderBy(kvp => kvp.Key);
-
-            var dailyChanges = new List<DailyChange>();
-
-            var prevCases = 0;
-            foreach(var dailyCases in orderedCasesInRange)
-            {
-                var change = new DailyChange(dailyCases.Key, dailyCases.Value, dailyCases.Value - prevCases);
-                prevCases = dailyCases.Value;
-                dailyChanges.Add(change);
-            }
-
-            return new DailyBreakdownResult(county, countyRow.Latitude, countyRow.Longitude, dailyChanges);
+            return GetDailyBreakdown(county, countyRow.Latitude, countyRow.Longitude, countyRow.ConfirmedCases);
         }
 
         public async Task<DailyBreakdownResult> GetDailyBreakdownByState(string state, DateRange range)
@@ -95,7 +83,13 @@ namespace COVIDData
                 return dict;
             });
 
-            var orderedCasesInRange = stateTotalsInRange.OrderBy(kvp => kvp.Key);
+            return GetDailyBreakdown(state, string.Empty, string.Empty, stateTotalsInRange);
+        }
+
+        private DailyBreakdownResult GetDailyBreakdown(string location, string latitude, string longitude, 
+            IReadOnlyDictionary<DateTime, int> locationData)
+        {
+            var orderedCasesInRange = locationData.OrderBy(kvp => kvp.Key);
 
             var dailyChanges = new List<DailyChange>();
 
@@ -107,34 +101,14 @@ namespace COVIDData
                 dailyChanges.Add(change);
             }
 
-            return new DailyBreakdownResult(state, string.Empty, string.Empty, dailyChanges);
+            return new DailyBreakdownResult(location, latitude, longitude, dailyChanges);
         }
 
         public async Task<RateOfChangeResult> GetRateOfChangeByCounty(string county, DateRange range)
         {
             var countyRow = await GetDataForCounty(county);
 
-            var orderedCasesInRange = countyRow.ConfirmedCases.Where(kvp => range.Contains(kvp.Key)).OrderBy(kvp => kvp.Key);
-
-            var dailyRateOfChange = new List<DailyRateOfChange>();
-
-            //TODO: Requirement is unclear on what the percentage should be against:
-            //e.g. Could be percentage of total population in the region, etc.
-            //Using the data we have, going for rate of change against the highest number of cases in the range.
-            var maxCasesInRange = orderedCasesInRange.Max(kvp => kvp.Value);
-            var normalizationFactor = 100.0 / maxCasesInRange;
-
-            var prevCases = 0;
-            foreach (var dailyCases in orderedCasesInRange)
-            {
-                var totalChange = dailyCases.Value - prevCases;
-                var percentChange = Math.Round(totalChange * normalizationFactor, 1);
-                var change = new DailyRateOfChange(dailyCases.Key, totalChange, percentChange);
-                prevCases = dailyCases.Value;
-                dailyRateOfChange.Add(change);
-            }
-
-            return new RateOfChangeResult(county, countyRow.Latitude, countyRow.Longitude, dailyRateOfChange);
+            return GetRateOfChange(county, countyRow.Latitude, countyRow.Longitude, countyRow.ConfirmedCases);
         }
 
         public async Task<RateOfChangeResult> GetRateOfChangeByState(string state, DateRange range)
@@ -153,7 +127,13 @@ namespace COVIDData
                 return dict;
             });
 
-            var orderedCasesInRange = stateTotalsInRange.OrderBy(kvp => kvp.Key);
+            return GetRateOfChange(state, string.Empty, string.Empty, stateTotalsInRange);
+        }
+
+        private RateOfChangeResult GetRateOfChange(string location, string latitude, string longitude,
+            IReadOnlyDictionary<DateTime, int> locationData)
+        {
+            var orderedCasesInRange = locationData.OrderBy(kvp => kvp.Key);
 
             var dailyRateOfChange = new List<DailyRateOfChange>();
 
@@ -166,14 +146,19 @@ namespace COVIDData
             var prevCases = 0;
             foreach (var dailyCases in orderedCasesInRange)
             {
-                var totalChange = dailyCases.Value - prevCases;
-                var percentChange = Math.Round(totalChange * normalizationFactor, 1);
-                var change = new DailyRateOfChange(dailyCases.Key, totalChange, percentChange);
+                var change = GetDailyRateOfChange(dailyCases, prevCases, normalizationFactor);
                 prevCases = dailyCases.Value;
                 dailyRateOfChange.Add(change);
             }
 
-            return new RateOfChangeResult(state, string.Empty, string.Empty, dailyRateOfChange);
+            return new RateOfChangeResult(location, latitude, longitude, dailyRateOfChange);
+        }
+
+        private DailyRateOfChange GetDailyRateOfChange(KeyValuePair<DateTime, int> dailyCases, int prevCases, double normalizationFactor)
+        {
+            var totalChange = dailyCases.Value - prevCases;
+            var percentChange = Math.Round(totalChange * normalizationFactor, 1);
+            return new DailyRateOfChange(dailyCases.Key, totalChange, percentChange);
         }
 
         private double GetAverage(int minCases, int maxCases, double days)
