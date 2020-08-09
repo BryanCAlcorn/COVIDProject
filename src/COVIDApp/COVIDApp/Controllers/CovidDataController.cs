@@ -52,7 +52,34 @@ namespace COVIDApp.Controllers
         [HttpGet, Route("daily")]
         public async Task<IActionResult> DailyBreakdown(string county, string state, DateTime? startDate, DateTime? endDate)
         {
-            return NotFound();
+            try
+            {
+                var dateRange = new DateRange(startDate, endDate);
+                if (dateRange.TotalDays <= 0) return BadRequest($"{nameof(startDate)} must be earlier than {nameof(endDate)}");
+
+                if (!string.IsNullOrEmpty(county))
+                {
+                    return Ok(await _dataRepository.GetDailyBreakdownByCounty(county, dateRange));
+                }
+                else if (!string.IsNullOrEmpty(state))
+                {
+                    return Ok(await _dataRepository.GetDailyBreakdownByState(state, dateRange));
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+            catch (DataNotFoundException dex)
+            {
+                Console.WriteLine(dex);
+                return NotFound(string.IsNullOrEmpty(county) ? state : county);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return Problem();
+            }
         }
 
         [HttpGet, Route("change")]
