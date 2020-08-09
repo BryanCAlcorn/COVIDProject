@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using COVIDData;
+using COVIDData.Exceptions;
+using COVIDData.Interfaces;
+using COVIDData.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace COVIDApp.Controllers

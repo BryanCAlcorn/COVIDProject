@@ -1,4 +1,5 @@
 using COVIDData;
+using COVIDData.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace COVIDTests

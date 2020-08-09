@@ -1,4 +1,6 @@
 ﻿using COVIDData;
+using COVIDData.Exceptions;
+using COVIDData.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 

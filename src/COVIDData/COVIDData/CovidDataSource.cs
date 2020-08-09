@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualBasic.FileIO;
+﻿using COVIDData.Interfaces;
+using COVIDData.Models;
+using Microsoft.VisualBasic.FileIO;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;

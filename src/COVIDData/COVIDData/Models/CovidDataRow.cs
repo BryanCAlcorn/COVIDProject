@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace COVIDData
+namespace COVIDData.Models
 {
     public class CovidDataRow
     {

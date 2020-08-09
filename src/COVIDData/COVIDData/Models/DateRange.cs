@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using COVIDData.Exceptions;
+using System;
 
-namespace COVIDData
+namespace COVIDData.Models
 {
     public class DateRange
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace COVIDData
+namespace COVIDData.Exceptions
 {
     public class DatesOutOfRangeException : ArgumentException
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace COVIDData
+namespace COVIDData.Models
 {
     public class DailyBreakdownResult
     {
