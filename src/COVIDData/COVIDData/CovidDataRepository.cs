@@ -35,7 +35,6 @@ namespace COVIDData
         public async Task<CovidQueryResult> QueryByState(string state, DateRange range)
         {
             var stateRows = await GetDataForState(state);
-
             var stateTotals = AggregateCaseTotalsOverRange(stateRows, range);
 
             var minDate = stateTotals.Keys.Min();
@@ -59,7 +58,6 @@ namespace COVIDData
         public async Task<DailyBreakdownResult> GetDailyBreakdownByState(string state, DateRange range)
         {
             var stateRows = await GetDataForState(state);
-
             var stateTotalsInRange = AggregateCaseTotalsOverRange(stateRows, range);
 
             return GetDailyBreakdown(state, string.Empty, string.Empty, stateTotalsInRange, range);
@@ -75,7 +73,6 @@ namespace COVIDData
         public async Task<RateOfChangeResult> GetRateOfChangeByState(string state, DateRange range)
         {
             var stateRows = await GetDataForState(state);
-
             var stateTotalsInRange = AggregateCaseTotalsOverRange(stateRows, range);
 
             return GetRateOfChange(state, string.Empty, string.Empty, stateTotalsInRange, range);
@@ -106,7 +103,7 @@ namespace COVIDData
 
             var dailyRateOfChange = new List<DailyRateOfChange>();
 
-            //TODO: Requirement is unclear on what the percentage should be against:
+            //TODO: Requirement is  bit unclear on what the percentage should be against:
             //e.g. Could be percentage of total population in the region, etc.
             //Using the data we have, going for rate of change against the highest number of cases in the range.
             var maxCasesInRange = orderedCasesInRange.Max(kvp => kvp.Value);
