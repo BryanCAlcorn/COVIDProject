@@ -12,8 +12,6 @@ namespace COVIDData
     public class CovidDataRepository : ICovidDataRepository
     {
         private ICovidDataSource _covidDataSource;
-        private IList<CovidDataRow> _cachedCovidData;
-        private DateTime _fetchDate;
 
         public CovidDataRepository(ICovidDataSource dataSource)
         {
@@ -149,7 +147,7 @@ namespace COVIDData
 
         private async Task<CovidDataRow> GetDataForCounty(string county)
         {
-            var data = await CovidData();
+            var data = await _covidDataSource.GetData();
 
             var countyRow = data.FirstOrDefault(d => string.Equals(d.County, county, StringComparison.OrdinalIgnoreCase));
             if (countyRow == null) throw new DataNotFoundException($"County {county} not available in data set.", nameof(county));
@@ -159,7 +157,7 @@ namespace COVIDData
 
         private async Task<IEnumerable<CovidDataRow>> GetDataForState(string state)
         {
-            var data = await CovidData();
+            var data = await _covidDataSource.GetData();
 
             var stateRows = data.Where(d => string.Equals(d.ProvinceState, state, StringComparison.OrdinalIgnoreCase));
             if (!stateRows.Any()) throw new DataNotFoundException($"State {state} not available in data set", nameof(state));
@@ -180,19 +178,6 @@ namespace COVIDData
 
                 return dict;
             });
-        }
-
-        private async Task<IList<CovidDataRow>> CovidData()
-        {
-            if (_cachedCovidData == null ||
-                //Re-Fetch cached data every day.
-                (DateTime.Now - _fetchDate).TotalDays > 1)
-            {
-                _cachedCovidData = await _covidDataSource.GetData();
-                _fetchDate = DateTime.Now;
-            }
-
-            return _cachedCovidData;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using COVIDData.Interfaces;
 using COVIDData.Models;
 using Microsoft.VisualBasic.FileIO;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -13,7 +14,23 @@ namespace COVIDData
 
         private readonly HttpClient _dataClient = new HttpClient();
 
+        private IList<CovidDataRow> _cachedCovidData;
+        private DateTime _fetchDate;
+
         public async Task<IList<CovidDataRow>> GetData()
+        {
+            if (_cachedCovidData == null ||
+                //Re-Fetch cached data every day.
+                (DateTime.Now - _fetchDate).TotalDays > 1)
+            {
+                _cachedCovidData = await GetDataFromSource();
+                _fetchDate = DateTime.Now;
+            }
+
+            return _cachedCovidData;
+        }
+
+        private async Task<IList<CovidDataRow>> GetDataFromSource()
         {
             var parsedRows = new List<CovidDataRow>();
 
@@ -37,6 +54,5 @@ namespace COVIDData
 
             return parsedRows;
         }
-
     }
 }

@@ -39,8 +39,8 @@ namespace COVIDApp
         {
             services.AddControllersWithViews();
 
-            services.AddTransient<ICovidDataSource, CovidDataSource>();
-            services.AddSingleton<ICovidDataRepository, CovidDataRepository>();
+            services.AddSingleton<ICovidDataSource, CovidDataSource>();
+            services.AddTransient<ICovidDataRepository, CovidDataRepository>();
 
             services.AddSwaggerGen(c =>
             {
