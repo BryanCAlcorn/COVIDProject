@@ -64,7 +64,7 @@ namespace COVIDData
         {
             var countyRow = await GetDataForCounty(county);
 
-            return GetDailyBreakdown(county, countyRow.Latitude, countyRow.Longitude, countyRow.ConfirmedCases);
+            return GetDailyBreakdown(county, countyRow.Latitude, countyRow.Longitude, countyRow.ConfirmedCases, range);
         }
 
         public async Task<DailyBreakdownResult> GetDailyBreakdownByState(string state, DateRange range)
@@ -73,14 +73,14 @@ namespace COVIDData
 
             var stateTotalsInRange = AggregateCaseTotalsOverRange(stateRows, range);
 
-            return GetDailyBreakdown(state, string.Empty, string.Empty, stateTotalsInRange);
+            return GetDailyBreakdown(state, string.Empty, string.Empty, stateTotalsInRange, range);
         }
 
         public async Task<RateOfChangeResult> GetRateOfChangeByCounty(string county, DateRange range)
         {
             var countyRow = await GetDataForCounty(county);
 
-            return GetRateOfChange(county, countyRow.Latitude, countyRow.Longitude, countyRow.ConfirmedCases);
+            return GetRateOfChange(county, countyRow.Latitude, countyRow.Longitude, countyRow.ConfirmedCases, range);
         }
 
         public async Task<RateOfChangeResult> GetRateOfChangeByState(string state, DateRange range)
@@ -89,13 +89,13 @@ namespace COVIDData
 
             var stateTotalsInRange = AggregateCaseTotalsOverRange(stateRows, range);
 
-            return GetRateOfChange(state, string.Empty, string.Empty, stateTotalsInRange);
+            return GetRateOfChange(state, string.Empty, string.Empty, stateTotalsInRange, range);
         }
 
         private DailyBreakdownResult GetDailyBreakdown(string location, string latitude, string longitude, 
-            IReadOnlyDictionary<DateTime, int> locationData)
+            IReadOnlyDictionary<DateTime, int> locationData, DateRange range)
         {
-            var orderedCasesInRange = locationData.OrderBy(kvp => kvp.Key);
+            var orderedCasesInRange = locationData.Where(kvp => range.Contains(kvp.Key)).OrderBy(kvp => kvp.Key);
 
             var dailyChanges = new List<DailyChange>();
 
@@ -111,9 +111,9 @@ namespace COVIDData
         }
 
         private RateOfChangeResult GetRateOfChange(string location, string latitude, string longitude,
-            IReadOnlyDictionary<DateTime, int> locationData)
+            IReadOnlyDictionary<DateTime, int> locationData, DateRange range)
         {
-            var orderedCasesInRange = locationData.OrderBy(kvp => kvp.Key);
+            var orderedCasesInRange = locationData.Where(kvp => range.Contains(kvp.Key)).OrderBy(kvp => kvp.Key);
 
             var dailyRateOfChange = new List<DailyRateOfChange>();
 
