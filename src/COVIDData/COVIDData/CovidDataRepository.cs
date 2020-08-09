@@ -20,7 +20,8 @@ namespace COVIDData
         {
             var data = await CovidData();
 
-            var countyRow = data.First(d => string.Equals(d.County, county, StringComparison.OrdinalIgnoreCase));
+            var countyRow = data.FirstOrDefault(d => string.Equals(d.County, county, StringComparison.OrdinalIgnoreCase));
+            if (countyRow == null) throw new DataNotFoundException($"County {county} not available in data set.", nameof(county));
 
             var minDate = range.StartDate;
             if(!countyRow.ConfirmedCases.TryGetValue(minDate, out var minCases))
@@ -48,6 +49,7 @@ namespace COVIDData
             var data = await CovidData();
 
             var stateRows = data.Where(d => string.Equals(d.ProvinceState, state, StringComparison.OrdinalIgnoreCase));
+            if (!stateRows.Any()) throw new DataNotFoundException($"State {state} not available in data set", nameof(state));
 
             var stateTotals = stateRows.Aggregate(new Dictionary<DateTime, int>(), (dict, countyRow) =>
             {

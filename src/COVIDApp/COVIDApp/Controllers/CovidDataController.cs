@@ -22,6 +22,8 @@ namespace COVIDApp.Controllers
             try
             {
                 var dateRange = new DateRange(startDate, endDate);
+                if (dateRange.TotalDays <= 0) return BadRequest($"{nameof(startDate)} must be earlier than {nameof(endDate)}");
+
                 if (!string.IsNullOrEmpty(county))
                 {
                     return Ok(await _dataRepository.QueryByCounty(county, dateRange));
@@ -34,6 +36,11 @@ namespace COVIDApp.Controllers
                 {
                     return NotFound();
                 }
+            }
+            catch(DataNotFoundException dex)
+            {
+                Console.WriteLine(dex);
+                return NotFound(string.IsNullOrEmpty(county) ? state : county);
             }
             catch(Exception ex)
             {
