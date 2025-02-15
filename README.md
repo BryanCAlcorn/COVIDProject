@@ -1,6 +1,6 @@
 # COVIDProject
 
-Built in .NET Core 3.1 and Visual Studio 3019 Community edition.
+Built in .NET Core 3.1 and Visual Studio 2019 Community edition.
 
 Provides APIs for querying data about the COVID-19 pandemic by county or state over given date ranges.
 Has functions for aggregating data and providing data over time.
